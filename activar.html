@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a1a">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Punch · Activa tu cuenta</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c5cff'/%3E%3Cstop offset='.55' stop-color='%234f7dff'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='url(%23g)'/%3E%3Cpath fill='%23fff' fill-rule='evenodd' d='M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --fondo:#0b0a1a; --texto:#f5f4ff; --suave:rgba(245,244,255,.68); --tenue:rgba(245,244,255,.42);
+    --vidrio:rgba(255,255,255,.08); --filo:rgba(255,255,255,.22); --brillo:rgba(255,255,255,.55);
+    --cian:#22d3ee; --ok:#5ee6a8; --error:#ff8f8f; --aviso:#ffd27a;
+    --grad:linear-gradient(135deg,#7c5cff 0%,#4f7dff 55%,#22d3ee 100%);
+    --display:"Bricolage Grotesque","SF Pro Display",system-ui,sans-serif;
+    --cuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--texto);font:15px/1.5 var(--cuerpo);-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
+  [hidden]{display:none!important}
+  button,input{font:inherit;color:inherit}
+  :focus-visible{outline:2px solid var(--cian);outline-offset:3px}
+
+  .orbes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .orbes i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:flotar 18s ease-in-out infinite alternate}
+  .orbes i:nth-child(1){width:52vmax;height:52vmax;left:-18vmax;top:-20vmax;background:#5b3bff}
+  .orbes i:nth-child(2){width:40vmax;height:40vmax;right:-14vmax;top:18vh;background:#1fb8e8;animation-duration:22s;opacity:.4}
+  .orbes i:nth-child(3){width:46vmax;height:46vmax;left:10vw;bottom:-28vmax;background:#c13bff;animation-duration:26s;opacity:.35}
+  @keyframes flotar{to{transform:translate(6vmax,4vmax) scale(1.08)}}
+
+  .vidrio{position:relative;background:var(--vidrio);border:1px solid var(--filo);border-radius:24px;
+    backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);
+    box-shadow:inset 0 1px 0 var(--brillo),0 20px 50px rgba(3,2,15,.45)}
+  .vidrio::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05))}
+
+  main{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;
+    padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+    display:flex;flex-direction:column;gap:16px;justify-content:center}
+
+  .marca{display:flex;align-items:center;justify-content:center;gap:10px}
+  .marca svg{width:44px;height:44px;filter:drop-shadow(0 6px 14px rgba(79,125,255,.45))}
+  .marca span{font:800 28px/1 var(--display);letter-spacing:-.02em}
+
+  .caja{padding:24px 20px;display:grid;gap:16px}
+  h1{margin:0;font:800 26px/1.15 var(--display);letter-spacing:-.02em;text-align:center;text-wrap:balance}
+  .intro{margin:-4px 0 0;text-align:center;color:var(--suave)}
+  .intro b{color:var(--texto)}
+  .email{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:14px;color:var(--suave);min-width:0}
+  .email svg{width:18px;height:18px;flex:none;opacity:.7}
+  .email b{color:var(--texto);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .campo{display:grid;gap:6px;font-size:13px;font-weight:500;color:var(--suave)}
+  .entrada{position:relative}
+  .entrada input{width:100%;padding:14px 48px 14px 15px;border-radius:14px;border:1px solid var(--filo);background:rgba(255,255,255,.06);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+  .entrada input:focus{border-color:rgba(34,211,238,.7);background:rgba(255,255,255,.1);outline:none;box-shadow:0 0 0 4px rgba(34,211,238,.15)}
+  .entrada input.mal{border-color:rgba(255,143,143,.7)}
+  .entrada input.bien{border-color:rgba(94,230,168,.7)}
+  .ojo{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;padding:8px;border-radius:10px;cursor:pointer;color:var(--suave)}
+  .ojo svg{width:20px;height:20px;display:block}
+
+  .fuerza{display:grid;gap:6px}
+  .barra{height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+  .barra i{display:block;height:100%;width:0;border-radius:inherit;background:var(--error);transition:width .25s ease,background .25s ease}
+  .fuerza small{color:var(--suave);font-size:12px}
+
+  .requisitos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;color:var(--suave)}
+  @media (max-width:380px){.requisitos{grid-template-columns:1fr}}
+  .requisitos li{display:flex;gap:7px;align-items:flex-start;line-height:1.35}
+  .requisitos li::before{content:"";flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;border:1.5px solid var(--tenue)}
+  .requisitos li.ok{color:var(--texto)}
+  .requisitos li.ok::before{border-color:var(--ok);background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%230b0a1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
+  .requisitos li.ancho{grid-column:1/-1}
+  .coincide{font-size:13px;min-height:1.3em;margin:-6px 0 0}
+  .coincide.ok{color:var(--ok)} .coincide.mal{color:var(--error)}
+
+  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:1px solid rgba(255,255,255,.35);border-radius:16px;padding:15px;font-size:16px;font-weight:600;
+    background:var(--grad);color:#fff;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 10px 26px rgba(79,125,255,.45);transition:transform .15s ease,opacity .2s}
+  .btn:active{transform:scale(.98)}
+  .btn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+  .btn.secundario{background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+  .msg{margin:0;text-align:center;font-size:14px;min-height:1.3em;color:var(--suave)}
+  .msg.error{color:var(--error)}
+  .estado{padding:28px 22px;text-align:center;display:grid;gap:12px;justify-items:center}
+  .estado .icono{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1)}
+  .estado .icono svg{width:28px;height:28px}
+  .estado h2{margin:0;font:800 22px/1.2 var(--display)}
+  .estado p{margin:0;color:var(--suave)}
+  .pie{text-align:center;font-size:12px;color:var(--tenue)}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradPunch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset=".55" stop-color="#4f7dff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+    <linearGradient id="brilloPunch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <symbol id="logoPunch" viewBox="0 0 64 64">
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#gradPunch)"/>
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#brilloPunch)"/>
+      <path fill="#fff" fill-rule="evenodd" d="M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/>
+      <circle cx="48.5" cy="47.5" r="3.4" fill="#fff" opacity=".9"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="orbes" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<main>
+  <div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div>
+
+  <p class="estado vidrio" id="cargando"><span>Comprobando tu invitación…</span></p>
+
+  <!-- Crear contraseña -->
+  <form class="caja vidrio" id="form" hidden novalidate autocomplete="on">
+    <h1>Activa tu cuenta</h1>
+    <p class="intro">Vas a gestionar las tarjetas de sellos de <b id="negocio"></b>. Crea una contraseña para entrar en tu panel.</p>
+    <div class="email">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      <span>Tu usuario:</span> <b id="email"></b>
+    </div>
+    <!-- Campo oculto para que el gestor de contraseñas asocie la contraseña a este email -->
+    <input type="email" id="usuario" autocomplete="username" hidden>
+
+    <label class="campo" for="pass">Contraseña
+      <span class="entrada">
+        <input id="pass" type="password" autocomplete="new-password" maxlength="128" aria-describedby="requisitos fuerzaTexto">
+        <button class="ojo" type="button" data-para="pass" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </span>
+    </label>
+
+    <div class="fuerza" aria-live="polite">
+      <div class="barra"><i id="fuerzaBarra"></i></div>
+      <small id="fuerzaTexto">Escribe una contraseña</small>
+    </div>
+
+    <ul class="requisitos" id="requisitos">
+      <li data-r="longitud">Al menos 10 caracteres</li>
+      <li data-r="mayuscula">Una mayúscula</li>
+      <li data-r="minuscula">Una minúscula</li>
+      <li data-r="numero">Un número</li>
+      <li data-r="simbolo">Un símbolo (!?#@…)</li>
+      <li data-r="datos_personales">Sin tu email ni el negocio</li>
+    </ul>
+
+    <label class="campo" for="pass2">Repite la contraseña
+      <span class="entrada">
+        <input id="pass2" type="password" autocomplete="new-password" maxlength="128">
+        <button class="ojo" type="button" data-para="pass2" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </span>
+    </label>
+    <p class="coincide" id="coincide" aria-live="polite"></p>
+
+    <button class="btn" id="guardar" type="submit" disabled>Crear contraseña y entrar</button>
+    <p class="msg" id="msg" role="alert"></p>
+  </form>
+
+  <!-- Estados -->
+  <div class="estado vidrio" id="estado" hidden>
+    <div class="icono" id="estadoIcono"></div>
+    <h2 id="estadoTitulo"></h2>
+    <p id="estadoTexto"></p>
+    <a class="btn secundario" id="estadoBoton" href="./" style="text-decoration:none">Ir al panel</a>
+  </div>
+
+  <p class="pie">Tus datos viajan cifrados. Nunca te pediremos la contraseña por correo ni por teléfono.</p>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
+  const API = `${SUPABASE_URL}/functions/v1/activar`;
+  const $ = (id) => document.getElementById(id);
+  const token = new URLSearchParams(location.search).get("i") || "";
+  // El token no debe quedarse en el historial ni en la barra
+  if (token) history.replaceState(null, "", location.pathname);
+  let datos = null;
+
+  const ICONO_ERROR = '<svg viewBox="0 0 24 24" fill="none" stroke="#ff8f8f" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>';
+  const ICONO_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#5ee6a8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+  function estado(titulo, texto, ok, boton = "Ir al panel") {
+    $("cargando").hidden = true; $("form").hidden = true; $("estado").hidden = false;
+    $("estadoIcono").innerHTML = ok ? ICONO_OK : ICONO_ERROR;
+    $("estadoTitulo").textContent = titulo; $("estadoTexto").textContent = texto; $("estadoBoton").textContent = boton;
+  }
+  const ERRORES = {
+    no_valida: ["Enlace no válido", "Este enlace de invitación no existe. Revisa que lo hayas copiado entero o pide uno nuevo a Punch."],
+    usada: ["Invitación ya usada", "Esta invitación ya se ha utilizado. Si ya creaste tu contraseña, entra en tu panel."],
+    caducada: ["Invitación caducada", "Las invitaciones duran 7 días. Pide una nueva a Punch."],
+  };
+
+  // ── Reglas (las mismas que comprueba el servidor) ──
+  const normalizar = (s) => s.toLocaleLowerCase("es").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "");
+  function reglas(pw) {
+    const p = normalizar(pw), usuario = normalizar((datos?.email || "").split("@")[0]), nombre = normalizar(datos?.negocio || "");
+    return {
+      longitud: pw.length >= 10,
+      mayuscula: /[A-ZÑÁÉÍÓÚÜ]/.test(pw),
+      minuscula: /[a-zñáéíóúü]/.test(pw),
+      numero: /[0-9]/.test(pw),
+      simbolo: /[^A-Za-z0-9ñÑáéíóúÁÉÍÓÚüÜ]/.test(pw),
+      datos_personales: pw.length > 0 && !((usuario.length >= 4 && p.includes(usuario)) || (nombre.length >= 4 && p.includes(nombre))),
+    };
+  }
+  function fuerza(pw, r) {
+    if (!pw) return [0, "Escribe una contraseña", "var(--error)"];
+    let puntos = Object.values(r).filter(Boolean).length; // 0-6
+    if (pw.length >= 14) puntos += 1;
+    if (pw.length >= 18) puntos += 1;
+    if (/(.)\1\1/.test(pw)) puntos -= 1;                          // aaa
+    if (/(0123|1234|2345|3456|abcd|qwer|asdf)/i.test(pw)) puntos -= 1; // secuencias
+    const pct = Math.max(8, Math.min(100, puntos / 8 * 100));
+    if (puntos <= 3) return [pct, "Débil", "var(--error)"];
+    if (puntos <= 5) return [pct, "Mejorable", "var(--aviso)"];
+    if (puntos <= 6) return [pct, "Buena", "var(--ok)"];
+    return [pct, "Muy segura", "var(--ok)"];
+  }
+
+  function revisar() {
+    const pw = $("pass").value, pw2 = $("pass2").value, r = reglas(pw);
+    document.querySelectorAll("#requisitos li").forEach((li) => li.classList.toggle("ok", !!r[li.dataset.r]));
+    const [pct, txt, color] = fuerza(pw, r);
+    $("fuerzaBarra").style.width = pct + "%"; $("fuerzaBarra").style.background = color; $("fuerzaTexto").textContent = txt;
+    const cumple = Object.values(r).every(Boolean);
+    $("pass").classList.toggle("bien", cumple); $("pass").classList.toggle("mal", pw.length >= 10 && !cumple);
+    const c = $("coincide");
+    if (!pw2) { c.textContent = ""; c.className = "coincide"; }
+    else if (pw === pw2) { c.textContent = "✓ Las contraseñas coinciden"; c.className = "coincide ok"; }
+    else { c.textContent = "Las contraseñas no coinciden"; c.className = "coincide mal"; }
+    $("pass2").classList.toggle("bien", !!pw2 && pw === pw2); $("pass2").classList.toggle("mal", !!pw2 && pw !== pw2);
+    $("guardar").disabled = !(cumple && pw === pw2);
+    return cumple && pw === pw2;
+  }
+  $("pass").addEventListener("input", revisar);
+  $("pass2").addEventListener("input", revisar);
+  document.querySelectorAll(".ojo").forEach((b) => b.addEventListener("click", () => {
+    const i = $(b.dataset.para), ver = i.type === "password";
+    i.type = ver ? "text" : "password"; b.setAttribute("aria-label", ver ? "Ocultar contraseña" : "Mostrar contraseña");
+  }));
+
+  // Comprobación previa en filtraciones (k-anonimato: solo salen 5 caracteres del SHA-1)
+  async function filtrada(pw) {
+    try {
+      const h = new Uint8Array(await crypto.subtle.digest("SHA-1", new TextEncoder().encode(pw)));
+      const hex = Array.from(h, (b) => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+      const r = await fetch(`https://api.pwnedpasswords.com/range/${hex.slice(0, 5)}`, { headers: { "Add-Padding": "true" } });
+      if (!r.ok) return false;
+      return (await r.text()).split("\n").some((l) => { const [s, n] = l.trim().split(":"); return s === hex.slice(5) && Number(n) > 0; });
+    } catch { return false; }
+  }
+
+  $("form").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (!revisar()) return;
+    const pw = $("pass").value, m = $("msg"), b = $("guardar");
+    b.disabled = true; m.className = "msg"; m.textContent = "Comprobando la seguridad de la contraseña…";
+    if (await filtrada(pw)) {
+      m.className = "msg error"; m.textContent = "Esa contraseña aparece en filtraciones de datos de internet. Elige otra distinta.";
+      b.disabled = false; return;
+    }
+    m.textContent = "Creando tu cuenta…";
+    let d, r;
+    try {
+      r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", apikey: SUPABASE_KEY }, body: JSON.stringify({ token, password: pw }) });
+      d = await r.json().catch(() => ({}));
+    } catch { m.className = "msg error"; m.textContent = "Sin conexión. Revisa internet e inténtalo de nuevo."; b.disabled = false; return; }
+
+    if (!r.ok) {
+      if (ERRORES[d.error]) return estado(...ERRORES[d.error], false);
+      m.className = "msg error";
+      m.textContent = d.error === "contrasena_filtrada" ? "Esa contraseña aparece en filtraciones de datos de internet. Elige otra distinta."
+        : d.error === "contrasena_debil" ? "La contraseña no cumple todos los requisitos."
+        : "No se pudo crear la cuenta. Inténtalo de nuevo en unos minutos.";
+      b.disabled = false; return;
+    }
+
+    if (d.ya_tenia_cuenta) {
+      return estado("Negocio añadido a tu cuenta", `Ya tenías una cuenta con ${d.email}. Hemos añadido ${datos.negocio} a tu panel: entra con tu contraseña de siempre.`, true);
+    }
+    // Entrar automáticamente con la contraseña recién creada
+    m.textContent = "Entrando en tu panel…";
+    try {
+      const t = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" },
+        body: JSON.stringify({ email: d.email, password: pw }),
+      });
+      const s = await t.json();
+      if (!t.ok) throw new Error();
+      try { localStorage.setItem("punch-sesion", JSON.stringify({ access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Math.floor(Date.now() / 1000) + s.expires_in })); } catch {}
+      location.replace("./#bienvenida");
+    } catch {
+      estado("¡Cuenta creada!", "Ya puedes entrar en tu panel con tu email y la contraseña que acabas de crear.", true, "Entrar en el panel");
+    }
+  });
+
+  (async () => {
+    if (!/^[0-9a-f]{32,64}$/.test(token)) return estado(...ERRORES.no_valida, false);
+    try {
+      const r = await fetch(`${API}?token=${token}`, { headers: { apikey: SUPABASE_KEY } });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) return estado(...(ERRORES[d.error] || ERRORES.no_valida), false);
+      datos = d;
+      $("negocio").textContent = d.negocio; $("email").textContent = d.email; $("usuario").value = d.email;
+      $("cargando").hidden = true; $("form").hidden = false; $("pass").focus();
+    } catch { estado("Sin conexión", "No hemos podido comprobar tu invitación. Revisa internet y vuelve a abrir el enlace.", false, "Reintentar"); $("estadoBoton").href = `${location.pathname}?i=${token}`; }
+  })();
+</script>
+</body>
+</html>

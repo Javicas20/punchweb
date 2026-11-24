@@ -335,7 +335,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "9";
+  const VERSION = "10";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
@@ -664,7 +664,12 @@
   document.querySelector("[data-from-input]").onclick = () => { const s = serieDeTexto($("serie").value) || $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
   $("btnEscanear").onclick = abrirEscaner;
   $("cerrarEscaner").onclick = cerrarEscaner;
-  (async () => { await pintar(); abrirPendiente(); })();
+  (async () => {
+    const vieneDeActivar = location.hash === "#bienvenida";
+    if (vieneDeActivar) history.replaceState(null, "", location.pathname + location.search);
+    await pintar();
+    if (vieneDeActivar && sesion) { bienvenida(); setTimeout(abrirPendiente, 2000); } else abrirPendiente();
+  })();
 </script>
 </body>
 </html>
