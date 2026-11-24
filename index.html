@@ -2,24 +2,162 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Punch · Sellar visitas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a1a">
+<meta name="robots" content="noindex">
+<title>Punch · Panel del negocio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c5cff'/%3E%3Cstop offset='.55' stop-color='%234f7dff'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='url(%23g)'/%3E%3Cpath fill='%23fff' fill-rule='evenodd' d='M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
 <style>
-  :root{--bg:#f4f4f7;--panel:#fff;--fg:#1b1f2a;--muted:#5d6475;--line:#dde0e8;--accent:#3d4fd6;--ok:#1d7a4d;--err:#b3261e}
-  @media (prefers-color-scheme:dark){:root{--bg:#12141b;--panel:#1b1e28;--fg:#e8eaf2;--muted:#9aa1b4;--line:#2c3040;--accent:#8f9cff;--ok:#5fd39a;--err:#ff8a80;color-scheme:dark}}
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,sans-serif}
-  main{max-width:640px;margin:0 auto;padding:24px 16px;display:grid;gap:16px}
-  h1{font-size:22px;margin:0} .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
-  input,button{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
-  button{cursor:pointer} button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center} .muted{color:var(--muted);font-size:13px}
-  ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-  li{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}
-  .n{font-variant-numeric:tabular-nums;font-weight:600} .ok{color:var(--ok)} .err{color:var(--err)}
+  /* Estilo «liquid glass»: fondo vivo con orbes de color y paneles translúcidos con brillo */
+  :root{
+    --fondo:#0b0a1a; --texto:#f5f4ff; --suave:rgba(245,244,255,.66); --tenue:rgba(245,244,255,.42);
+    --vidrio:rgba(255,255,255,.08); --vidrio-fuerte:rgba(255,255,255,.14); --filo:rgba(255,255,255,.22); --brillo:rgba(255,255,255,.55);
+    --violeta:#7c5cff; --azul:#4f7dff; --cian:#22d3ee; --ok:#5ee6a8; --error:#ff8f8f;
+    --grad:linear-gradient(135deg,#7c5cff 0%,#4f7dff 55%,#22d3ee 100%);
+    --display:"Bricolage Grotesque","SF Pro Display",system-ui,sans-serif;
+    --cuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--texto);font:15px/1.5 var(--cuerpo);-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
   [hidden]{display:none!important}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--cian);outline-offset:3px}
+
+  /* Fondo con orbes */
+  .orbes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .orbes i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:flotar 18s ease-in-out infinite alternate}
+  .orbes i:nth-child(1){width:52vmax;height:52vmax;left:-18vmax;top:-20vmax;background:#5b3bff}
+  .orbes i:nth-child(2){width:40vmax;height:40vmax;right:-14vmax;top:18vh;background:#1fb8e8;animation-duration:22s;opacity:.4}
+  .orbes i:nth-child(3){width:46vmax;height:46vmax;left:10vw;bottom:-28vmax;background:#c13bff;animation-duration:26s;opacity:.35}
+  .orbes::after{content:"";position:absolute;inset:0;background:radial-gradient(transparent 0,rgba(11,10,26,.55) 75%);}
+  @keyframes flotar{to{transform:translate(6vmax,4vmax) scale(1.08)}}
+
+  /* Vidrio */
+  .vidrio{position:relative;background:var(--vidrio);border:1px solid var(--filo);border-radius:24px;
+    backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);
+    box-shadow:inset 0 1px 0 var(--brillo),inset 0 -1px 0 rgba(255,255,255,.06),0 20px 50px rgba(3,2,15,.45)}
+  .vidrio::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05))}
+
+  .contenedor{position:relative;z-index:1;max-width:560px;margin:0 auto;min-height:100vh;min-height:100dvh;
+    padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+    display:flex;flex-direction:column;gap:16px}
+
+  /* Logo */
+  .marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+  .marca svg{width:38px;height:38px;filter:drop-shadow(0 6px 14px rgba(79,125,255,.45))}
+  .marca span{font:800 24px/1 var(--display);letter-spacing:-.02em}
+
+  /* Login */
+  .login{margin:auto 0;padding:28px 22px 22px;display:grid;gap:18px}
+  .login .marca{justify-content:center;flex-direction:column;gap:12px}
+  .login .marca svg{width:72px;height:72px}
+  .login .marca span{font-size:34px}
+  .login h1{margin:0;text-align:center;font:600 17px/1.35 var(--cuerpo);color:var(--suave)}
+  .campo{display:grid;gap:6px;font-size:13px;font-weight:500;color:var(--suave)}
+  .campo input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--filo);background:rgba(255,255,255,.06);font-size:16px;color:var(--texto);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+  .campo input::placeholder{color:var(--tenue)}
+  .campo input:focus{border-color:rgba(34,211,238,.7);background:rgba(255,255,255,.1);outline:none;box-shadow:0 0 0 4px rgba(34,211,238,.15)}
+  .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid var(--filo);border-radius:14px;padding:12px 16px;
+    background:var(--vidrio-fuerte);font-weight:600;transition:transform .15s ease,background .2s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+  .btn:hover{background:rgba(255,255,255,.2)} .btn:active{transform:scale(.97)}
+  .btn svg{width:20px;height:20px;flex:none}
+  .btn.principal{background:var(--grad);border-color:rgba(255,255,255,.35);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 10px 26px rgba(79,125,255,.45)}
+  .btn.principal:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.55;cursor:default;transform:none}
+  .btn.ancho{width:100%;padding:15px;font-size:16px}
+  .msg{min-height:1.4em;margin:0;text-align:center;font-size:14px;color:var(--suave)}
+  .msg.error{color:var(--error)}
+  .pie{text-align:center;font-size:12px;color:var(--tenue);margin-top:auto}
+
+  /* Barra superior */
+  .barra{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 14px;border-radius:20px}
+  .barra .negocio{min-width:0;text-align:right;font-size:12px;color:var(--suave);line-height:1.3}
+  .barra .negocio b{display:block;color:var(--texto);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .barra .derecha{display:flex;align-items:center;gap:10px;min-width:0}
+  .btn.icono{padding:9px;border-radius:12px}
+
+  /* Escanear */
+  .escanear{padding:22px;display:grid;gap:14px;text-align:center}
+  .escanear h2{margin:0;font:800 26px/1.15 var(--display);letter-spacing:-.02em;text-wrap:balance}
+  .escanear p{margin:-6px 0 0;color:var(--suave)}
+  .escanear .btn.principal{padding:18px;font-size:18px;border-radius:18px}
+  .escanear .btn.principal svg{width:26px;height:26px}
+  details summary{cursor:pointer;color:var(--tenue);font-size:13px;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details[open] summary{margin-bottom:10px}
+  .fila{display:flex;gap:8px}
+  .fila input{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1px solid var(--filo);background:rgba(255,255,255,.06);color:var(--texto)}
+
+  /* Ficha */
+  .ficha{padding:18px;display:grid;gap:14px;border-color:rgba(34,211,238,.45);animation:entrarFicha .35s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes entrarFicha{from{opacity:0;transform:translateY(10px) scale(.98)}}
+  .ficha .cab{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .ficha .nom{font:800 24px/1.1 var(--display);letter-spacing:-.01em}
+  .ficha .det{color:var(--suave);font-size:13px;margin-top:4px}
+  .ficha .cuenta{font:800 30px/1 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ficha .cuenta small{font-size:15px;color:var(--suave)}
+  .ficha .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .ficha .btns .btn{flex:1;min-width:130px;padding:14px}
+
+  .puntos{display:flex;flex-wrap:wrap;gap:6px}
+  .puntos i{width:14px;height:14px;border-radius:50%;border:1.5px dashed color-mix(in srgb,var(--c,#7c5cff) 70%,transparent)}
+  .puntos i.on{border-style:solid;border-color:var(--c,#7c5cff);background:var(--c,#7c5cff);box-shadow:0 0 10px color-mix(in srgb,var(--c,#7c5cff) 60%,transparent)}
+  .ficha .puntos i{width:20px;height:20px}
+
+  /* Lista */
+  .clientes{padding:16px;display:grid;gap:10px}
+  .clientes .cab{display:flex;justify-content:space-between;align-items:center}
+  .clientes h3{margin:0;font:600 15px/1 var(--cuerpo);color:var(--suave)}
+  ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  li.cliente{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:12px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+  li.cliente .nom{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  li.cliente .sub{font-size:12px;color:var(--tenue)}
+  li.cliente .acciones{display:flex;gap:6px;grid-row:span 2;align-items:center}
+  li.cliente .acciones .btn{padding:9px 12px;font-size:14px;border-radius:12px}
+  li.vacio{padding:18px;text-align:center;color:var(--suave);font-size:14px}
+
+  /* Aviso flotante */
+  .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;width:min(92vw,520px);
+    padding:13px 16px;border-radius:16px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+  .toast.ver{opacity:1;transform:translate(-50%,0)}
+  .toast.ok{border-color:rgba(94,230,168,.45)} .toast.error{border-color:rgba(255,143,143,.5);color:#ffd9d9}
+
+  /* Animación de bienvenida: el sello de Punch golpea la pantalla */
+  .bienvenida{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(11,10,26,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fundir .4s 1.9s ease forwards}
+  .bienvenida .escena{position:relative;width:240px;height:240px;display:grid;place-items:center;animation:temblor .28s .48s}
+  .bienvenida .tampon{width:150px;height:150px;transform:scale(2.6) rotate(-18deg);opacity:0;animation:golpe .5s cubic-bezier(.55,0,.75,.2) forwards;filter:drop-shadow(0 18px 30px rgba(79,125,255,.5))}
+  .bienvenida .onda{position:absolute;inset:30px;border-radius:50%;border:3px solid var(--cian);opacity:0;animation:onda .7s .48s ease-out forwards}
+  .bienvenida .huella{position:absolute;inset:0;opacity:0;animation:huella .3s .5s ease-out forwards}
+  .bienvenida .huella text{font:800 15px var(--display);letter-spacing:.32em;fill:rgba(255,255,255,.85)}
+  .bienvenida .saludo{position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center;opacity:0;animation:aparecer .35s .75s forwards}
+  .bienvenida .saludo b{display:block;font:800 26px/1.2 var(--display)} .bienvenida .saludo span{color:var(--suave)}
+  @keyframes golpe{70%{opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+  @keyframes temblor{25%{transform:translate(3px,2px)}50%{transform:translate(-3px,-1px)}75%{transform:translate(2px,-2px)}}
+  @keyframes onda{0%{opacity:.9;transform:scale(.7)}100%{opacity:0;transform:scale(1.55)}}
+  @keyframes huella{from{opacity:0;transform:scale(1.1) rotate(-6deg)}to{opacity:1;transform:scale(1) rotate(-6deg)}}
+  @keyframes aparecer{to{opacity:1}}
+  @keyframes fundir{to{opacity:0;visibility:hidden}}
+
+  /* Escáner */
+  .escaner{position:fixed;inset:0;z-index:80;background:#000;display:flex;flex-direction:column}
+  .escaner video{flex:1;width:100%;min-height:0;object-fit:cover}
+  .marco{position:absolute;left:50%;top:42%;width:min(68vw,300px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:28px;box-shadow:0 0 0 9999px rgba(5,4,15,.55)}
+  .marco::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:3px;background:var(--grad);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .marco::after{content:"";position:absolute;left:8%;right:8%;height:2px;top:10%;background:var(--cian);box-shadow:0 0 14px var(--cian);animation:barrido 1.8s ease-in-out infinite alternate}
+  @keyframes barrido{to{top:88%}}
+  .escaner .panel{position:absolute;left:max(16px,env(safe-area-inset-left));right:max(16px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));padding:16px;display:grid;gap:12px;border-radius:22px}
+  .escaner .panel p{margin:0;text-align:center;font-weight:600}
+
   /* Animación de corte al sellar */
-  .corte{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(10,8,22,.62);backdrop-filter:blur(3px);cursor:pointer}
-  .escena{position:relative;width:220px;height:260px;display:grid;justify-items:center}
+  .corte{position:fixed;inset:0;z-index:75;display:grid;place-items:center;background:rgba(10,8,22,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer}
+  .corte .escena{position:relative;width:220px;height:260px;display:grid;justify-items:center}
   .sello{position:relative;width:180px;height:180px}
   .mitad{position:absolute;inset:0;border-radius:50%;border:5px dashed var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
   .izq{transform-origin:50% 100%;clip-path:inset(-10px 50% -10px -10px);animation:sepIzq .55s .95s cubic-bezier(.3,.7,.4,1) forwards}
@@ -30,8 +168,8 @@
   .tijeras .b{transform-origin:12px 12px;animation:hojaB .17s 5 alternate ease-in-out}
   .nuevo{position:absolute;inset:16px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:var(--f);transform:scale(0);animation:pop .45s 1.25s cubic-bezier(.2,1.6,.4,1) forwards}
   .nuevo svg{width:64px;height:64px}
-  .rotulo{margin-top:22px;color:#fff;text-align:center;opacity:0;animation:aparece .3s 1.45s forwards}
-  .rotulo strong{display:block;font-size:22px} .rotulo span{font-size:15px;opacity:.85}
+  .rotulo{margin-top:22px;color:#fff;text-align:center;opacity:0;animation:aparecer .3s 1.45s forwards}
+  .rotulo strong{display:block;font:800 24px/1.2 var(--display)} .rotulo span{font-size:15px;opacity:.85}
   @keyframes bajar{from{top:-70px}to{top:170px}}
   @keyframes linea{to{transform:scaleY(1)}}
   @keyframes hojaA{from{transform:rotate(14deg)}to{transform:rotate(-2deg)}}
@@ -40,62 +178,116 @@
   @keyframes sepDer{to{transform:translate(70px,40px) rotate(24deg);opacity:0}}
   @keyframes fuera{to{opacity:0}}
   @keyframes pop{to{transform:scale(1)}}
-  @keyframes aparece{to{opacity:1}}
-  /* Escáner de QR */
-  .escanear{width:100%;padding:14px;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px}
-  .escanear svg{width:22px;height:22px}
-  .escaner{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column}
-  .escaner video{flex:1;width:100%;min-height:0;object-fit:cover}
-  .marco{position:absolute;left:50%;top:42%;width:min(68vw,300px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:22px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);outline:3px solid #fff;outline-offset:-3px}
-  .escaner .barra{position:absolute;left:0;right:0;bottom:0;padding:16px max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:grid;gap:12px;background:linear-gradient(transparent,rgba(0,0,0,.85) 30%)}
-  .escaner .barra p{margin:0;color:#fff;text-align:center;font-weight:600}
-  .escaner .barra button{background:#fff;color:#111;border:0;padding:13px;font-weight:600}
-  .ficha{border:2px solid var(--accent);border-radius:12px;padding:14px;display:grid;gap:10px;background:var(--bg)}
-  .ficha .nom{font-size:20px;font-weight:700}
-  .ficha .btns{display:flex;gap:8px;flex-wrap:wrap}
-  .ficha .btns button{flex:1;min-width:120px;padding:12px}
-  @media (prefers-reduced-motion:reduce){.corte *{animation-duration:.01s!important;animation-delay:0s!important}}
+
+  .sinjs{position:relative;z-index:2;margin:16px;padding:12px 14px;border-radius:14px;background:#5a1d1d;color:#ffe1e1;font-weight:600}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important}}
 </style>
 </head>
 <body>
-<main>
-  <p id="arranque" style="margin:0;padding:10px 12px;border-radius:8px;background:#fde8e6;color:#8c1d18;font-weight:600">⚠️ La página no se está ejecutando. Ábrela con Chrome o Safari en el ordenador (clic derecho → Abrir con).</p>
-  <h1>Punch <span class="muted">· sellar visitas (prueba técnica)</span></h1>
+<!-- Logo de Punch: una «P» con el agujero de una perforadora y el confeti que sale al picar -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gradPunch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset=".55" stop-color="#4f7dff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+    <linearGradient id="brilloPunch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <symbol id="logoPunch" viewBox="0 0 64 64">
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#gradPunch)"/>
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#brilloPunch)"/>
+      <path fill="#fff" fill-rule="evenodd" d="M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/>
+      <circle cx="48.5" cy="47.5" r="3.4" fill="#fff" opacity=".9"/>
+    </symbol>
+  </defs>
+</svg>
 
-  <section class="panel" id="login">
-    <label for="email">Email</label><input id="email" type="email" autocomplete="username">
-    <label for="pass">Contraseña</label><input id="pass" type="password" autocomplete="current-password">
-    <button class="primary" id="entrar">Entrar</button>
-    <p class="muted" id="loginMsg" role="status"></p>
+<div class="orbes" aria-hidden="true"><i></i><i></i><i></i></div>
+<p class="sinjs" id="arranque">La página no se está ejecutando. Ábrela en Chrome o Safari.</p>
+
+<div class="contenedor">
+  <!-- Inicio de sesión -->
+  <section class="login vidrio" id="login" aria-labelledby="tituloLogin">
+    <div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div>
+    <h1 id="tituloLogin">Panel del negocio<br>Sella las visitas de tus clientes</h1>
+    <label class="campo" for="email">Email
+      <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="tu@negocio.com">
+    </label>
+    <label class="campo" for="pass">Contraseña
+      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••">
+    </label>
+    <button class="btn principal ancho" id="entrar">Entrar</button>
+    <p class="msg" id="loginMsg" role="status"></p>
   </section>
 
-  <section class="panel" id="app" hidden>
-    <div class="row" style="justify-content:space-between"><strong id="negocio"></strong><button id="salir">Salir</button></div>
-    <button class="primary escanear" id="btnEscanear">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/></svg>
-      Escanear tarjeta del cliente
-    </button>
-    <div class="ficha" id="ficha" hidden aria-live="polite">
-      <div><div class="nom" id="fichaNombre"></div><div class="muted" id="fichaDetalle"></div></div>
-      <div class="btns" id="fichaBotones"></div>
-    </div>
-    <details>
-      <summary class="muted">Escribir el código a mano</summary>
-      <div class="row" style="margin-top:8px">
-        <input id="serie" placeholder="Código de la tarjeta" style="flex:1;min-width:200px">
-        <button class="primary" data-accion="sello" data-from-input>Buscar</button>
+  <!-- Panel -->
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
+    <header class="barra vidrio">
+      <div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div>
+      <div class="derecha">
+        <div class="negocio"><span>Sellando en</span><b id="negocio"></b></div>
+        <button class="btn icono" id="salir" title="Salir" aria-label="Salir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg>
+        </button>
       </div>
-    </details>
-    <p id="estado" role="status" class="muted"></p>
-    <div class="row" style="justify-content:space-between"><strong>Tarjetas</strong><button id="recargar">Actualizar lista</button></div>
-    <ul id="lista"></ul>
-  </section>
-</main>
+    </header>
+
+    <section class="escanear vidrio" aria-labelledby="tituloEscanear">
+      <h2 id="tituloEscanear">¿Quién viene hoy?</h2>
+      <p>Escanea el QR de la tarjeta del cliente para sellar su visita.</p>
+      <button class="btn principal ancho" id="btnEscanear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/></svg>
+        Escanear tarjeta
+      </button>
+      <details>
+        <summary>¿No funciona la cámara? Escribe el código</summary>
+        <div class="fila">
+          <input id="serie" placeholder="Código de la tarjeta" autocomplete="off">
+          <button class="btn" data-from-input>Buscar</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="ficha vidrio" id="ficha" hidden aria-live="polite">
+      <div class="cab">
+        <div><div class="nom" id="fichaNombre"></div><div class="det" id="fichaDetalle"></div></div>
+        <div class="cuenta" id="fichaCuenta"></div>
+      </div>
+      <div class="puntos" id="fichaPuntos" aria-hidden="true"></div>
+      <div class="btns" id="fichaBotones"></div>
+    </section>
+
+    <section class="clientes vidrio" aria-labelledby="tituloClientes">
+      <div class="cab">
+        <h3 id="tituloClientes">Últimos clientes</h3>
+        <button class="btn icono" id="recargar" title="Actualizar" aria-label="Actualizar lista">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
+        </button>
+      </div>
+      <ul id="lista"></ul>
+    </section>
+  </div>
+
+  <p class="pie" id="pie">Punch · prueba técnica</p>
+</div>
+
+<div class="toast vidrio" id="estado" role="status" aria-live="polite"></div>
+
+<div class="bienvenida" id="bienvenida" hidden aria-hidden="true">
+  <div class="escena">
+    <span class="onda"></span>
+    <svg class="huella" viewBox="0 0 240 240">
+      <defs><path id="circuloHuella" d="M120,120 m-104,0 a104,104 0 1,1 208,0 a104,104 0 1,1 -208,0"/></defs>
+      <circle cx="120" cy="120" r="116" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-dasharray="4 7"/>
+      <text><textPath href="#circuloHuella">PUNCH · SELLADO · PUNCH · SELLADO ·</textPath></text>
+    </svg>
+    <svg class="tampon"><use href="#logoPunch"/></svg>
+    <div class="saludo"><b id="saludoTitulo">¡Hola!</b><span id="saludoTexto"></span></div>
+  </div>
+</div>
+
 <div class="escaner" id="escaner" hidden>
   <video id="video" playsinline muted></video>
   <div class="marco" aria-hidden="true"></div>
-  <div class="barra"><p id="escanerMsg" role="status"></p><button id="cerrarEscaner">Cancelar</button></div>
+  <div class="panel vidrio"><p id="escanerMsg" role="status"></p><button class="btn ancho" id="cerrarEscaner">Cancelar</button></div>
 </div>
+
 <div class="corte" id="corte" hidden aria-live="polite">
   <div class="escena">
     <div class="sello">
@@ -110,13 +302,16 @@
     <div class="rotulo"><strong id="corteTitulo"></strong><span id="corteTexto"></span></div>
   </div>
 </div>
+
 <script>
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
+  const VERSION = "8";
   const $ = (id) => document.getElementById(id);
-  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 7)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
-  window.addEventListener("error", (ev) => { $("loginMsg").textContent = "Error en la página: " + ev.message; });
+  $("arranque").hidden = true;
+  $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
+  window.addEventListener("error", (ev) => aviso("Error en la página: " + ev.message, "error"));
 
   const MENSAJES = {
     tarjeta_no_encontrada: "No existe esa tarjeta en tu negocio.",
@@ -126,6 +321,13 @@
     sin_sellos: "No hay sellos que anular.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
   };
+
+  // ── Aviso flotante ──
+  let avisoTimer;
+  function aviso(texto, tipo = "") {
+    const t = $("estado"); t.textContent = texto; t.className = `toast vidrio ver ${tipo}`;
+    clearTimeout(avisoTimer); avisoTimer = setTimeout(() => t.classList.remove("ver"), tipo === "error" ? 7000 : 4500);
+  }
 
   // ── Sesión ──
   let sesion = null;
@@ -174,42 +376,58 @@
   }
 
   // ── Pantalla ──
+  const colores = {};
+  let nombresNegocio = "";
+  function puntos(cont, sellos, total, color) {
+    cont.textContent = ""; cont.style.setProperty("--c", color || "#7c5cff");
+    for (let i = 0; i < total; i++) { const p = document.createElement("i"); if (i < sellos) p.className = "on"; cont.appendChild(p); }
+  }
+
   async function pintar() {
     await asegurarSesion();
     $("login").hidden = !!sesion; $("app").hidden = !sesion;
     if (!sesion) return;
     try {
       const negocios = await leer("negocios?select=nombre");
-      $("negocio").textContent = negocios.length ? negocios.map((n) => n.nombre).join(", ") : "Sin negocio asignado";
-      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(visitas_para_premio,color_etiquetas,color_fondo)&order=actualizada_en.desc&limit=50");
+      nombresNegocio = negocios.map((n) => n.nombre).join(" · ");
+      $("negocio").textContent = nombresNegocio || "Sin negocio asignado";
+      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)&order=actualizada_en.desc&limit=50");
       const ul = $("lista"); ul.textContent = "";
-      if (!tarjetas.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay tarjetas. Crea una desde el móvil con el enlace de alta."; ul.appendChild(li); }
+      if (!tarjetas.length) { const li = document.createElement("li"); li.className = "vacio"; li.textContent = "Todavía no hay clientes. Cuando alguien escanee el QR del mostrador, aparecerá aquí."; ul.appendChild(li); }
       for (const t of tarjetas) {
         const total = t.negocio.visitas_para_premio, completa = t.sellos >= total;
-        const li = document.createElement("li");
-        const info = document.createElement("div");
-        const nom = document.createElement("div"); nom.textContent = t.nombre_cliente;
-        const det = document.createElement("div"); det.className = "muted"; det.textContent = t.serie.slice(0, 8).toUpperCase();
-        info.append(nom, det);
-        const n = document.createElement("span"); n.className = "n"; n.textContent = `${t.sellos}/${total}`;
-        const btns = document.createElement("div"); btns.className = "row";
-        const mk = (txt, accion, primary) => { const b = document.createElement("button"); b.textContent = txt; if (primary) b.className = "primary"; b.onclick = () => accionar(t.serie, accion); return b; };
         colores[t.serie] = t.negocio;
-        btns.append(completa ? mk("Canjear premio", "canje", true) : mk("Sellar", "sello", true));
-        if (t.sellos > 0) btns.append(mk("Deshacer", "anulacion"));
-        li.append(info, n, btns); ul.appendChild(li);
+        const li = document.createElement("li"); li.className = "cliente";
+        const info = document.createElement("div"); info.style.minWidth = "0";
+        const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = t.nombre_cliente;
+        const sub = document.createElement("div"); sub.className = "sub"; sub.textContent = `${t.negocio.nombre} · ${t.sellos}/${total}` + (completa ? " · premio listo" : "");
+        info.append(nom, sub);
+        const acc = document.createElement("div"); acc.className = "acciones";
+        const mk = (txt, accion, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = () => accionar(t.serie, accion); return b; };
+        acc.append(completa ? mk("Canjear", "canje", true) : mk("Sellar", "sello", true));
+        const pts = document.createElement("div"); pts.className = "puntos"; puntos(pts, t.sellos, total, t.negocio.color_etiquetas);
+        li.append(info, acc, pts); ul.appendChild(li);
       }
     } catch (e) {
-      $("estado").className = "err"; $("estado").textContent = MENSAJES[e.message] || "No se pudo cargar: " + e.message;
+      aviso(MENSAJES[e.message] || "No se pudo cargar: " + e.message, "error");
       if (e.message === "sin_sesion") pintar();
     }
   }
 
-  const colores = {};
+  // ── Bienvenida con sello ──
+  function bienvenida() {
+    const b = $("bienvenida");
+    $("saludoTitulo").textContent = "¡Bienvenido!";
+    $("saludoTexto").textContent = nombresNegocio ? `Panel de ${nombresNegocio}` : "Listo para sellar";
+    b.hidden = true; void b.offsetWidth; b.hidden = false;
+    if (navigator.vibrate) setTimeout(() => navigator.vibrate(35), 480);
+    setTimeout(() => { b.hidden = true; }, 2400);
+  }
+
   let corteTimer;
   function animarCorte(serie, data) {
     const capa = $("corte"), n = colores[serie] || {};
-    capa.style.setProperty("--c", n.color_etiquetas || "#6b3cf0");
+    capa.style.setProperty("--c", n.color_etiquetas || "#7c5cff");
     capa.style.setProperty("--f", n.color_fondo || "#ffffff");
     $("corteTitulo").textContent = data.quedan === 0 ? "¡Premio conseguido!" : `¡Sellado! ${data.sellos}/${data.visitas_para_premio}`;
     $("corteTexto").textContent = data.quedan === 0 ? `${data.cliente} ya puede canjearlo` : `A ${data.cliente} le quedan ${data.quedan}`;
@@ -293,8 +511,9 @@
 
   async function mostrarFicha(serie) {
     const f = $("ficha"), nom = $("fichaNombre"), det = $("fichaDetalle"), bt = $("fichaBotones");
-    f.hidden = false; nom.textContent = "Buscando la tarjeta…"; det.textContent = ""; bt.textContent = "";
-    const boton = (txt, fn, primary) => { const b = document.createElement("button"); b.textContent = txt; if (primary) b.className = "primary"; b.onclick = fn; bt.appendChild(b); };
+    f.hidden = false; nom.textContent = "Buscando la tarjeta…"; det.textContent = ""; bt.textContent = ""; $("fichaCuenta").textContent = ""; $("fichaPuntos").textContent = "";
+    f.scrollIntoView({ behavior: "smooth", block: "center" });
+    const boton = (txt, fn, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = fn; bt.appendChild(b); };
     const otra = () => boton("Escanear otra", abrirEscaner);
     try {
       const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
@@ -302,9 +521,11 @@
       const t = r[0], total = t.negocio.visitas_para_premio;
       colores[t.serie] = t.negocio;
       nom.textContent = t.nombre_cliente;
-      det.textContent = `${t.negocio.nombre} · ${t.sellos}/${total} sellos` + (t.sellos >= total ? " · ¡tiene el premio!" : "");
+      det.textContent = t.negocio.nombre + (t.sellos >= total ? " · ¡tiene el premio!" : ` · le quedan ${total - t.sellos}`);
+      $("fichaCuenta").innerHTML = ""; $("fichaCuenta").append(String(t.sellos), Object.assign(document.createElement("small"), { textContent: `/${total}` }));
+      puntos($("fichaPuntos"), t.sellos, total, t.negocio.color_etiquetas);
       const hacer = (accion) => async () => { await accionar(t.serie, accion); f.hidden = true; };
-      if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar", hacer("sello"), true);
+      if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar visita", hacer("sello"), true);
       if (t.sellos > 0) boton("Deshacer último", hacer("anulacion"));
       otra();
     } catch (e) {
@@ -313,7 +534,6 @@
   }
 
   async function accionar(serie, accion) {
-    const e = $("estado"); e.className = "muted"; e.textContent = "Enviando…";
     if (!(await asegurarSesion())) { pintar(); return; }
     let data;
     try {
@@ -322,37 +542,43 @@
         body: JSON.stringify({ serie, accion }),
       });
       data = await r.json().catch(() => ({}));
-      if (!r.ok) { e.className = "err"; e.textContent = MENSAJES[data.error] || "No se pudo completar: " + (data.error || data.message || r.status); return; }
-    } catch (err) { e.className = "err"; e.textContent = "Sin conexión con el servidor: " + err.message; return; }
+      if (!r.ok) { aviso(MENSAJES[data.error] || "No se pudo completar: " + (data.error || data.message || r.status), "error"); return; }
+    } catch (err) { aviso("Sin conexión con el servidor: " + err.message, "error"); return; }
 
     const av = data.avisos, g = data.google;
     const partes = [];
-    if (data.dispositivos > 0) partes.push(av.enviados ? `iPhone avisado (${av.enviados}).` : `Falló el aviso a iPhone: ${JSON.stringify(av.detalle)}`);
+    if (data.dispositivos > 0) partes.push(av.enviados ? "iPhone actualizado." : `Falló el aviso a iPhone: ${JSON.stringify(av.detalle)}`);
     if (g && g.estado === 200) partes.push("Android actualizado.");
     else if (g && g.estado !== 404) partes.push(`Falló Google Wallet: ${g.motivo || g.estado}`);
     if (!partes.length) partes.push("La tarjeta aún no está guardada en ningún móvil.");
     const fallo = (data.dispositivos > 0 && !av.enviados) || (g && g.estado !== 200 && g.estado !== 404);
-    e.className = fallo ? "err" : "ok";
-    e.textContent = `${data.cliente}: ${data.sellos}/${data.visitas_para_premio} sellos. ${partes.join(" ")}`;
+    const que = accion === "canje" ? "premio canjeado" : accion === "anulacion" ? "sello anulado" : `${data.sellos}/${data.visitas_para_premio}`;
+    aviso(`${data.cliente}: ${que}. ${partes.join(" ")}`, fallo ? "error" : "ok");
     if (accion === "sello") animarCorte(serie, data);
     pintar();
   }
 
   $("entrar").onclick = async () => {
-    $("loginMsg").textContent = "Entrando…";
-    try { await entrar($("email").value.trim(), $("pass").value); $("loginMsg").textContent = ""; }
-    catch (err) { $("loginMsg").textContent = err.message === "invalid_credentials" ? "Email o contraseña incorrectos." : "No se pudo entrar: " + err.message; }
-    pintarYAbrir();
+    const m = $("loginMsg"); m.className = "msg"; m.textContent = "Entrando…"; $("entrar").disabled = true;
+    try {
+      await entrar($("email").value.trim(), $("pass").value);
+      m.textContent = "";
+      await pintar(); bienvenida(); setTimeout(abrirPendiente, 2000);
+    } catch (err) {
+      m.className = "msg error";
+      m.textContent = err.message === "invalid_credentials" ? "Email o contraseña incorrectos." : "No se pudo entrar: " + err.message;
+    } finally { $("entrar").disabled = false; }
   };
   $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
-  $("salir").onclick = () => { guardar(null); pintar(); };
+  $("email").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("pass").focus(); });
+  $("salir").onclick = () => { guardar(null); $("ficha").hidden = true; pintar(); };
   $("recargar").onclick = pintar;
   $("corte").onclick = () => { $("corte").hidden = true; };
-  document.querySelector("[data-from-input]").onclick = () => { const s = $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
+  $("bienvenida").onclick = () => { $("bienvenida").hidden = true; };
+  document.querySelector("[data-from-input]").onclick = () => { const s = serieDeTexto($("serie").value) || $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
   $("btnEscanear").onclick = abrirEscaner;
-  const pintarYAbrir = async () => { await pintar(); abrirPendiente(); };
   $("cerrarEscaner").onclick = cerrarEscaner;
-  pintarYAbrir();
+  (async () => { await pintar(); abrirPendiente(); })();
 </script>
 </body>
 </html>
