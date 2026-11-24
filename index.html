@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Punch · Sellar visitas</title>
+<style>
+  :root{--bg:#f4f4f7;--panel:#fff;--fg:#1b1f2a;--muted:#5d6475;--line:#dde0e8;--accent:#3d4fd6;--ok:#1d7a4d;--err:#b3261e}
+  @media (prefers-color-scheme:dark){:root{--bg:#12141b;--panel:#1b1e28;--fg:#e8eaf2;--muted:#9aa1b4;--line:#2c3040;--accent:#8f9cff;--ok:#5fd39a;--err:#ff8a80;color-scheme:dark}}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,sans-serif}
+  main{max-width:640px;margin:0 auto;padding:24px 16px;display:grid;gap:16px}
+  h1{font-size:22px;margin:0} .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+  input,button{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+  button{cursor:pointer} button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center} .muted{color:var(--muted);font-size:13px}
+  ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  li{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}
+  .n{font-variant-numeric:tabular-nums;font-weight:600} .ok{color:var(--ok)} .err{color:var(--err)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <p id="arranque" style="margin:0;padding:10px 12px;border-radius:8px;background:#fde8e6;color:#8c1d18;font-weight:600">⚠️ La página no se está ejecutando. Ábrela con Chrome o Safari en el ordenador (clic derecho → Abrir con).</p>
+  <h1>Punch <span class="muted">· sellar visitas (prueba técnica)</span></h1>
+
+  <section class="panel" id="login">
+    <label for="email">Email</label><input id="email" type="email" autocomplete="username">
+    <label for="pass">Contraseña</label><input id="pass" type="password" autocomplete="current-password">
+    <button class="primary" id="entrar">Entrar</button>
+    <p class="muted" id="loginMsg" role="status"></p>
+  </section>
+
+  <section class="panel" id="app" hidden>
+    <div class="row" style="justify-content:space-between"><strong id="negocio"></strong><button id="salir">Salir</button></div>
+    <div class="row">
+      <input id="serie" placeholder="Código de la tarjeta (QR)" style="flex:1;min-width:200px">
+      <button class="primary" data-accion="sello" data-from-input>Sellar</button>
+    </div>
+    <p id="estado" role="status" class="muted"></p>
+    <div class="row" style="justify-content:space-between"><strong>Tarjetas</strong><button id="recargar">Actualizar lista</button></div>
+    <ul id="lista"></ul>
+  </section>
+</main>
+<script>
+  // Datos públicos del proyecto (URL y clave publishable). Sin librerías externas.
+  const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
+  const $ = (id) => document.getElementById(id);
+  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 4)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
+  window.addEventListener("error", (ev) => { $("loginMsg").textContent = "Error en la página: " + ev.message; });
+
+  const MENSAJES = {
+    tarjeta_no_encontrada: "No existe esa tarjeta en tu negocio.",
+    premio_pendiente: "Esta tarjeta ya tiene el premio: canjéalo primero.",
+    demasiado_pronto: "Se acaba de sellar. Espera 30 segundos antes de volver a sellar.",
+    premio_no_disponible: "Aún no tiene todos los sellos.",
+    sin_sellos: "No hay sellos que anular.",
+    sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
+  };
+
+  // ── Sesión ──
+  let sesion = null;
+  try { sesion = JSON.parse(localStorage.getItem("punch-sesion") || "null"); } catch {}
+  const guardar = (s) => { sesion = s; try { s ? localStorage.setItem("punch-sesion", JSON.stringify(s)) : localStorage.removeItem("punch-sesion"); } catch {} };
+  const caducada = () => !sesion || Date.now() / 1000 > sesion.expires_at - 30;
+
+  async function entrar(email, password) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error_code || d.msg || d.error_description || `HTTP ${r.status}`);
+    guardar({ access_token: d.access_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+  }
+
+  const cabeceras = () => ({ apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}` });
+
+  async function leer(ruta) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${ruta}`, { headers: cabeceras() });
+    if (r.status === 401) { guardar(null); throw new Error("sin_sesion"); }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+
+  // ── Pantalla ──
+  async function pintar() {
+    if (caducada()) guardar(null);
+    $("login").hidden = !!sesion; $("app").hidden = !sesion;
+    if (!sesion) return;
+    try {
+      const negocios = await leer("negocios?select=nombre");
+      $("negocio").textContent = negocios.length ? negocios.map((n) => n.nombre).join(", ") : "Sin negocio asignado";
+      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(visitas_para_premio)&order=actualizada_en.desc&limit=50");
+      const ul = $("lista"); ul.textContent = "";
+      if (!tarjetas.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay tarjetas. Crea una desde el móvil con el enlace de alta."; ul.appendChild(li); }
+      for (const t of tarjetas) {
+        const total = t.negocio.visitas_para_premio, completa = t.sellos >= total;
+        const li = document.createElement("li");
+        const info = document.createElement("div");
+        const nom = document.createElement("div"); nom.textContent = t.nombre_cliente;
+        const det = document.createElement("div"); det.className = "muted"; det.textContent = t.serie.slice(0, 8).toUpperCase();
+        info.append(nom, det);
+        const n = document.createElement("span"); n.className = "n"; n.textContent = `${t.sellos}/${total}`;
+        const btns = document.createElement("div"); btns.className = "row";
+        const mk = (txt, accion, primary) => { const b = document.createElement("button"); b.textContent = txt; if (primary) b.className = "primary"; b.onclick = () => accionar(t.serie, accion); return b; };
+        btns.append(completa ? mk("Canjear premio", "canje", true) : mk("Sellar", "sello", true));
+        if (t.sellos > 0) btns.append(mk("Deshacer", "anulacion"));
+        li.append(info, n, btns); ul.appendChild(li);
+      }
+    } catch (e) {
+      $("estado").className = "err"; $("estado").textContent = MENSAJES[e.message] || "No se pudo cargar: " + e.message;
+      if (e.message === "sin_sesion") pintar();
+    }
+  }
+
+  async function accionar(serie, accion) {
+    const e = $("estado"); e.className = "muted"; e.textContent = "Enviando…";
+    if (caducada()) { guardar(null); pintar(); return; }
+    let data;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/sellar`, {
+        method: "POST", headers: { ...cabeceras(), "content-type": "application/json" },
+        body: JSON.stringify({ serie, accion }),
+      });
+      data = await r.json().catch(() => ({}));
+      if (!r.ok) { e.className = "err"; e.textContent = MENSAJES[data.error] || "No se pudo completar: " + (data.error || data.message || r.status); return; }
+    } catch (err) { e.className = "err"; e.textContent = "Sin conexión con el servidor: " + err.message; return; }
+
+    const av = data.avisos, g = data.google;
+    const partes = [];
+    if (data.dispositivos > 0) partes.push(av.enviados ? `iPhone avisado (${av.enviados}).` : `Falló el aviso a iPhone: ${JSON.stringify(av.detalle)}`);
+    if (g && g.estado === 200) partes.push("Android actualizado.");
+    else if (g && g.estado !== 404) partes.push(`Falló Google Wallet: ${g.motivo || g.estado}`);
+    if (!partes.length) partes.push("La tarjeta aún no está guardada en ningún móvil.");
+    const fallo = (data.dispositivos > 0 && !av.enviados) || (g && g.estado !== 200 && g.estado !== 404);
+    e.className = fallo ? "err" : "ok";
+    e.textContent = `${data.cliente}: ${data.sellos}/${data.visitas_para_premio} sellos. ${partes.join(" ")}`;
+    pintar();
+  }
+
+  $("entrar").onclick = async () => {
+    $("loginMsg").textContent = "Entrando…";
+    try { await entrar($("email").value.trim(), $("pass").value); $("loginMsg").textContent = ""; }
+    catch (err) { $("loginMsg").textContent = err.message === "invalid_credentials" ? "Email o contraseña incorrectos." : "No se pudo entrar: " + err.message; }
+    pintar();
+  };
+  $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
+  $("salir").onclick = () => { guardar(null); pintar(); };
+  $("recargar").onclick = pintar;
+  document.querySelector("[data-from-input]").onclick = () => { const s = $("serie").value.trim(); if (s) accionar(s, "sello"); };
+  pintar();
+</script>
+</body>
+</html>
