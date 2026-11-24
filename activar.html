@@ -3,109 +3,117 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0a1a">
+<meta name="theme-color" content="#eef2ee">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <title>Punch · Activa tu cuenta</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c5cff'/%3E%3Cstop offset='.55' stop-color='%234f7dff'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='url(%23g)'/%3E%3Cpath fill='%23fff' fill-rule='evenodd' d='M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23557b6b'/%3E%3Cg transform='translate(1 -5)'%3E%3Crect x='16' y='20' width='9' height='36' rx='4.5' fill='%23fff'/%3E%3Ccircle cx='34' cy='31' r='12.5' fill='none' stroke='%23fff' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap">
 <style>
+  /* Marca Punch · paleta «salvia y niebla»: vidrio claro sobre un fondo vivo de verdes suaves */
   :root{
-    --fondo:#0b0a1a; --texto:#f5f4ff; --suave:rgba(245,244,255,.68); --tenue:rgba(245,244,255,.42);
-    --vidrio:rgba(255,255,255,.08); --filo:rgba(255,255,255,.22); --brillo:rgba(255,255,255,.55);
-    --cian:#22d3ee; --ok:#5ee6a8; --error:#ff8f8f; --aviso:#ffd27a;
-    --grad:linear-gradient(135deg,#7c5cff 0%,#4f7dff 55%,#22d3ee 100%);
-    --display:"Bricolage Grotesque","SF Pro Display",system-ui,sans-serif;
+    --fondo:#eef2ee; --texto:#1d2a24; --suave:rgba(29,42,36,.66); --tenue:rgba(29,42,36,.44);
+    --vidrio:rgba(255,255,255,.58); --vidrio-fuerte:rgba(255,255,255,.78); --filo:rgba(255,255,255,.9); --brillo:rgba(255,255,255,.95);
+    --linea:rgba(29,42,36,.1); --campo:rgba(255,255,255,.72);
+    --acento:#557b6b; --acento-osc:#3f6355; --menta:#cfe0d6; --arena:#e7ece2; --bruma:#d8e6e4;
+    --ok:#2f7d57; --error:#b5473a; --aviso:#a8741c;
+    --sombra:0 22px 50px rgba(30,52,42,.12),0 2px 6px rgba(30,52,42,.05);
+    --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
     --cuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    color-scheme:dark;
+    color-scheme:light;
   }
   *{box-sizing:border-box}
   html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--texto);font:15px/1.5 var(--cuerpo);-webkit-font-smoothing:antialiased}
   body{overflow-x:hidden}
   [hidden]{display:none!important}
   button,input{font:inherit;color:inherit}
-  :focus-visible{outline:2px solid var(--cian);outline-offset:3px}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--acento);outline-offset:3px}
 
   .orbes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-  .orbes i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;animation:flotar 18s ease-in-out infinite alternate}
-  .orbes i:nth-child(1){width:52vmax;height:52vmax;left:-18vmax;top:-20vmax;background:#5b3bff}
-  .orbes i:nth-child(2){width:40vmax;height:40vmax;right:-14vmax;top:18vh;background:#1fb8e8;animation-duration:22s;opacity:.4}
-  .orbes i:nth-child(3){width:46vmax;height:46vmax;left:10vw;bottom:-28vmax;background:#c13bff;animation-duration:26s;opacity:.35}
-  @keyframes flotar{to{transform:translate(6vmax,4vmax) scale(1.08)}}
+  .orbes i{position:absolute;border-radius:50%;filter:blur(70px);animation:flotar 22s ease-in-out infinite alternate}
+  .orbes i:nth-child(1){width:55vmax;height:55vmax;left:-20vmax;top:-22vmax;background:var(--menta);opacity:.95}
+  .orbes i:nth-child(2){width:42vmax;height:42vmax;right:-16vmax;top:20vh;background:var(--bruma);opacity:.9;animation-duration:26s}
+  .orbes i:nth-child(3){width:48vmax;height:48vmax;left:8vw;bottom:-30vmax;background:var(--arena);opacity:.95;animation-duration:30s}
+  @keyframes flotar{to{transform:translate(5vmax,3vmax) scale(1.06)}}
 
-  .vidrio{position:relative;background:var(--vidrio);border:1px solid var(--filo);border-radius:24px;
-    backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);
-    box-shadow:inset 0 1px 0 var(--brillo),0 20px 50px rgba(3,2,15,.45)}
+  .vidrio{position:relative;background:var(--vidrio);border:1px solid var(--filo);border-radius:26px;
+    backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%);
+    box-shadow:inset 0 1px 0 var(--brillo),var(--sombra)}
   .vidrio::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    background:linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,0) 38%,rgba(255,255,255,0) 70%,rgba(255,255,255,.05))}
+    background:linear-gradient(165deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%)}
 
+  .marca{display:flex;align-items:center;gap:9px;color:var(--texto);text-decoration:none}
+  .marca svg{width:34px;height:34px;color:var(--acento)}
+  .marca span{font:400 30px/1 var(--display);letter-spacing:-.01em}
+
+  .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid var(--linea);border-radius:14px;padding:12px 16px;
+    background:var(--vidrio-fuerte);color:var(--texto);font-weight:600;transition:transform .15s ease,background .2s ease,box-shadow .2s ease;box-shadow:0 1px 2px rgba(30,52,42,.06)}
+  .btn:hover{background:#fff} .btn:active{transform:scale(.97)}
+  .btn svg{width:20px;height:20px;flex:none}
+  .btn.principal{background:var(--acento);border-color:var(--acento);color:#fff;box-shadow:0 10px 24px rgba(63,99,85,.28),inset 0 1px 0 rgba(255,255,255,.25)}
+  .btn.principal:hover{background:var(--acento-osc)}
+  .btn:disabled{opacity:.5;cursor:default;transform:none}
+  .btn.ancho{width:100%;padding:15px;font-size:16px}
+  .btn.icono{padding:9px;border-radius:12px}
+
+  .campo{display:grid;gap:6px;font-size:13px;font-weight:500;color:var(--suave)}
+  .campo input,.entrada input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(30,52,42,.05)}
+  .campo input::placeholder{color:var(--tenue)}
+  .campo input:focus,.entrada input:focus{outline:none;border-color:var(--acento);background:#fff;box-shadow:0 0 0 4px rgba(85,123,107,.16)}
+  .msg{min-height:1.4em;margin:0;text-align:center;font-size:14px;color:var(--suave)}
+  .msg.error{color:var(--error)}
+  .pie{text-align:center;font-size:12px;color:var(--tenue)}
   main{position:relative;z-index:1;max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;
     padding:max(20px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
     display:flex;flex-direction:column;gap:16px;justify-content:center}
-
-  .marca{display:flex;align-items:center;justify-content:center;gap:10px}
-  .marca svg{width:44px;height:44px;filter:drop-shadow(0 6px 14px rgba(79,125,255,.45))}
-  .marca span{font:800 28px/1 var(--display);letter-spacing:-.02em}
-
-  .caja{padding:24px 20px;display:grid;gap:16px}
-  h1{margin:0;font:800 26px/1.15 var(--display);letter-spacing:-.02em;text-align:center;text-wrap:balance}
-  .intro{margin:-4px 0 0;text-align:center;color:var(--suave)}
+  main > .marca{justify-content:center}
+  main > .marca svg{width:44px;height:44px;padding:8px;border-radius:14px;background:#fff;box-shadow:0 8px 20px rgba(30,52,42,.12)}
+  main > .marca span{font-size:38px}
+  .caja{padding:28px 22px 22px;display:grid;gap:16px}
+  h1{margin:0;font:400 34px/1.1 var(--display);letter-spacing:-.01em;text-align:center;text-wrap:balance}
+  .intro{margin:-6px 0 0;text-align:center;color:var(--suave)}
   .intro b{color:var(--texto)}
-  .email{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:14px;color:var(--suave);min-width:0}
+  .email{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid var(--linea);font-size:14px;color:var(--suave);min-width:0}
   .email svg{width:18px;height:18px;flex:none;opacity:.7}
   .email b{color:var(--texto);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-  .campo{display:grid;gap:6px;font-size:13px;font-weight:500;color:var(--suave)}
-  .entrada{position:relative}
-  .entrada input{width:100%;padding:14px 48px 14px 15px;border-radius:14px;border:1px solid var(--filo);background:rgba(255,255,255,.06);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
-  .entrada input:focus{border-color:rgba(34,211,238,.7);background:rgba(255,255,255,.1);outline:none;box-shadow:0 0 0 4px rgba(34,211,238,.15)}
-  .entrada input.mal{border-color:rgba(255,143,143,.7)}
-  .entrada input.bien{border-color:rgba(94,230,168,.7)}
+  .entrada{position:relative;display:block}
+  .entrada input{padding-right:48px}
+  .entrada input.mal{border-color:rgba(181,71,58,.6)}
+  .entrada input.bien{border-color:rgba(47,125,87,.6)}
   .ojo{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;padding:8px;border-radius:10px;cursor:pointer;color:var(--suave)}
   .ojo svg{width:20px;height:20px;display:block}
-
   .fuerza{display:grid;gap:6px}
-  .barra{height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+  .barra{height:6px;border-radius:99px;background:rgba(29,42,36,.08);overflow:hidden}
   .barra i{display:block;height:100%;width:0;border-radius:inherit;background:var(--error);transition:width .25s ease,background .25s ease}
   .fuerza small{color:var(--suave);font-size:12px}
-
   .requisitos{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13px;color:var(--suave)}
   @media (max-width:380px){.requisitos{grid-template-columns:1fr}}
   .requisitos li{display:flex;gap:7px;align-items:flex-start;line-height:1.35}
   .requisitos li::before{content:"";flex:none;width:16px;height:16px;margin-top:1px;border-radius:50%;border:1.5px solid var(--tenue)}
   .requisitos li.ok{color:var(--texto)}
-  .requisitos li.ok::before{border-color:var(--ok);background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%230b0a1a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
-  .requisitos li.ancho{grid-column:1/-1}
+  .requisitos li.ok::before{border-color:var(--ok);background:var(--ok) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
   .coincide{font-size:13px;min-height:1.3em;margin:-6px 0 0}
   .coincide.ok{color:var(--ok)} .coincide.mal{color:var(--error)}
-
-  .btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;border:1px solid rgba(255,255,255,.35);border-radius:16px;padding:15px;font-size:16px;font-weight:600;
-    background:var(--grad);color:#fff;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 10px 26px rgba(79,125,255,.45);transition:transform .15s ease,opacity .2s}
-  .btn:active{transform:scale(.98)}
-  .btn:disabled{opacity:.45;cursor:default;transform:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
-  .btn.secundario{background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
-  .msg{margin:0;text-align:center;font-size:14px;min-height:1.3em;color:var(--suave)}
-  .msg.error{color:var(--error)}
-  .estado{padding:28px 22px;text-align:center;display:grid;gap:12px;justify-items:center}
-  .estado .icono{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1)}
+  .caja .btn.principal{width:100%;padding:15px;font-size:16px}
+  .estado{padding:30px 22px;text-align:center;display:grid;gap:12px;justify-items:center}
+  .estado .icono{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 8px 20px rgba(30,52,42,.1)}
   .estado .icono svg{width:28px;height:28px}
-  .estado h2{margin:0;font:800 22px/1.2 var(--display)}
+  .estado h2{margin:0;font:400 28px/1.15 var(--display)}
   .estado p{margin:0;color:var(--suave)}
-  .pie{text-align:center;font-size:12px;color:var(--tenue)}
   @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <linearGradient id="gradPunch" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset=".55" stop-color="#4f7dff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
-    <linearGradient id="brilloPunch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <!-- Logo de Punch: una «p» minúscula cuyo hueco es el agujero de una perforadora -->
     <symbol id="logoPunch" viewBox="0 0 64 64">
-      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#gradPunch)"/>
-      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#brilloPunch)"/>
-      <path fill="#fff" fill-rule="evenodd" d="M20 48V16h14a12 12 0 0 1 0 24h-6v8zm14-25a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/>
-      <circle cx="48.5" cy="47.5" r="3.4" fill="#fff" opacity=".9"/>
+      <g transform="translate(1 -5)" fill="currentColor">
+        <rect x="16" y="20" width="9" height="36" rx="4.5"/>
+        <circle cx="34" cy="31" r="12.5" fill="none" stroke="currentColor" stroke-width="9"/>
+      </g>
     </symbol>
   </defs>
 </svg>
@@ -156,7 +164,7 @@
     </label>
     <p class="coincide" id="coincide" aria-live="polite"></p>
 
-    <button class="btn" id="guardar" type="submit" disabled>Crear contraseña y entrar</button>
+    <button class="btn principal" id="guardar" type="submit" disabled>Crear contraseña y entrar</button>
     <p class="msg" id="msg" role="alert"></p>
   </form>
 
@@ -165,7 +173,7 @@
     <div class="icono" id="estadoIcono"></div>
     <h2 id="estadoTitulo"></h2>
     <p id="estadoTexto"></p>
-    <a class="btn secundario" id="estadoBoton" href="./" style="text-decoration:none">Ir al panel</a>
+    <a class="btn ancho" id="estadoBoton" href="./" style="text-decoration:none">Ir al panel</a>
   </div>
 
   <p class="pie">Tus datos viajan cifrados. Nunca te pediremos la contraseña por correo ni por teléfono.</p>
@@ -181,8 +189,8 @@
   if (token) history.replaceState(null, "", location.pathname);
   let datos = null;
 
-  const ICONO_ERROR = '<svg viewBox="0 0 24 24" fill="none" stroke="#ff8f8f" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>';
-  const ICONO_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#5ee6a8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+  const ICONO_ERROR = '<svg viewBox="0 0 24 24" fill="none" stroke="#b5473a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>';
+  const ICONO_OK = '<svg viewBox="0 0 24 24" fill="none" stroke="#2f7d57" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
   function estado(titulo, texto, ok, boton = "Ir al panel") {
     $("cargando").hidden = true; $("form").hidden = true; $("estado").hidden = false;
     $("estadoIcono").innerHTML = ok ? ICONO_OK : ICONO_ERROR;
