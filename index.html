@@ -41,6 +41,19 @@
   @keyframes fuera{to{opacity:0}}
   @keyframes pop{to{transform:scale(1)}}
   @keyframes aparece{to{opacity:1}}
+  /* Escáner de QR */
+  .escanear{width:100%;padding:14px;font-size:17px;display:flex;align-items:center;justify-content:center;gap:10px}
+  .escanear svg{width:22px;height:22px}
+  .escaner{position:fixed;inset:0;z-index:40;background:#000;display:flex;flex-direction:column}
+  .escaner video{flex:1;width:100%;min-height:0;object-fit:cover}
+  .marco{position:absolute;left:50%;top:42%;width:min(68vw,300px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:22px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);outline:3px solid #fff;outline-offset:-3px}
+  .escaner .barra{position:absolute;left:0;right:0;bottom:0;padding:16px max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:grid;gap:12px;background:linear-gradient(transparent,rgba(0,0,0,.85) 30%)}
+  .escaner .barra p{margin:0;color:#fff;text-align:center;font-weight:600}
+  .escaner .barra button{background:#fff;color:#111;border:0;padding:13px;font-weight:600}
+  .ficha{border:2px solid var(--accent);border-radius:12px;padding:14px;display:grid;gap:10px;background:var(--bg)}
+  .ficha .nom{font-size:20px;font-weight:700}
+  .ficha .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .ficha .btns button{flex:1;min-width:120px;padding:12px}
   @media (prefers-reduced-motion:reduce){.corte *{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
 </head>
@@ -58,15 +71,31 @@
 
   <section class="panel" id="app" hidden>
     <div class="row" style="justify-content:space-between"><strong id="negocio"></strong><button id="salir">Salir</button></div>
-    <div class="row">
-      <input id="serie" placeholder="Código de la tarjeta (QR)" style="flex:1;min-width:200px">
-      <button class="primary" data-accion="sello" data-from-input>Sellar</button>
+    <button class="primary escanear" id="btnEscanear">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M7 12h10"/></svg>
+      Escanear tarjeta del cliente
+    </button>
+    <div class="ficha" id="ficha" hidden aria-live="polite">
+      <div><div class="nom" id="fichaNombre"></div><div class="muted" id="fichaDetalle"></div></div>
+      <div class="btns" id="fichaBotones"></div>
     </div>
+    <details>
+      <summary class="muted">Escribir el código a mano</summary>
+      <div class="row" style="margin-top:8px">
+        <input id="serie" placeholder="Código de la tarjeta" style="flex:1;min-width:200px">
+        <button class="primary" data-accion="sello" data-from-input>Buscar</button>
+      </div>
+    </details>
     <p id="estado" role="status" class="muted"></p>
     <div class="row" style="justify-content:space-between"><strong>Tarjetas</strong><button id="recargar">Actualizar lista</button></div>
     <ul id="lista"></ul>
   </section>
 </main>
+<div class="escaner" id="escaner" hidden>
+  <video id="video" playsinline muted></video>
+  <div class="marco" aria-hidden="true"></div>
+  <div class="barra"><p id="escanerMsg" role="status"></p><button id="cerrarEscaner">Cancelar</button></div>
+</div>
 <div class="corte" id="corte" hidden aria-live="polite">
   <div class="escena">
     <div class="sello">
@@ -82,11 +111,11 @@
   </div>
 </div>
 <script>
-  // Datos públicos del proyecto (URL y clave publishable). Sin librerías externas.
+  // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
   const $ = (id) => document.getElementById(id);
-  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 5)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
+  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 7)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
   window.addEventListener("error", (ev) => { $("loginMsg").textContent = "Error en la página: " + ev.message; });
 
   const MENSAJES = {
@@ -104,6 +133,25 @@
   const guardar = (s) => { sesion = s; try { s ? localStorage.setItem("punch-sesion", JSON.stringify(s)) : localStorage.removeItem("punch-sesion"); } catch {} };
   const caducada = () => !sesion || Date.now() / 1000 > sesion.expires_at - 30;
 
+  // Renueva la sesión con el refresh token para no tener que entrar cada hora.
+  async function renovar() {
+    if (!sesion?.refresh_token) return false;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+        method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" },
+        body: JSON.stringify({ refresh_token: sesion.refresh_token }),
+      });
+      if (!r.ok) return false;
+      const d = await r.json();
+      guardar({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+      return true;
+    } catch { return false; }
+  }
+  async function asegurarSesion() {
+    if (sesion && caducada() && !(await renovar())) guardar(null);
+    return !!sesion;
+  }
+
   async function entrar(email, password) {
     const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" },
@@ -111,12 +159,14 @@
     });
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(d.error_code || d.msg || d.error_description || `HTTP ${r.status}`);
-    guardar({ access_token: d.access_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+    guardar({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
   }
 
   const cabeceras = () => ({ apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}` });
 
   async function leer(ruta) {
+    await asegurarSesion();
+    if (!sesion) throw new Error("sin_sesion");
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${ruta}`, { headers: cabeceras() });
     if (r.status === 401) { guardar(null); throw new Error("sin_sesion"); }
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -125,7 +175,7 @@
 
   // ── Pantalla ──
   async function pintar() {
-    if (caducada()) guardar(null);
+    await asegurarSesion();
     $("login").hidden = !!sesion; $("app").hidden = !sesion;
     if (!sesion) return;
     try {
@@ -168,9 +218,103 @@
     clearTimeout(corteTimer); corteTimer = setTimeout(() => { capa.hidden = true; }, 2900);
   }
 
+  // ── Tarjeta abierta desde el QR (?t=serie) ──
+  const serieDeTexto = (texto) => {
+    let v = texto.trim();
+    try { const u = new URL(v); v = u.searchParams.get("t") || ""; } catch {}
+    v = v.toLowerCase();
+    return /^[0-9a-f]{16,64}$/.test(v) ? v : null;
+  };
+  let pendiente = serieDeTexto(new URLSearchParams(location.search).get("t") || "");
+  if (pendiente) history.replaceState(null, "", location.pathname);
+  function abrirPendiente() {
+    if (pendiente && sesion) { const s = pendiente; pendiente = null; mostrarFicha(s); }
+    else if (pendiente) $("loginMsg").textContent = "Entra para sellar la tarjeta que has escaneado.";
+  }
+
+  // ── Escáner de QR ──
+  let flujo = null, buscando = false;
+  function cargarJsQR() {
+    if (window.jsQR) return Promise.resolve();
+    return new Promise((ok, ko) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+      s.onload = ok; s.onerror = () => ko(new Error("no se pudo cargar el lector de QR"));
+      document.head.appendChild(s);
+    });
+  }
+  async function abrirEscaner() {
+    $("ficha").hidden = true;
+    $("escaner").hidden = false; $("escanerMsg").textContent = "Abriendo la cámara…";
+    try {
+      let detector = null;
+      if ("BarcodeDetector" in window) {
+        try { if ((await BarcodeDetector.getSupportedFormats()).includes("qr_code")) detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch {}
+      }
+      if (!detector) await cargarJsQR();
+      flujo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      const v = $("video"); v.srcObject = flujo; await v.play();
+      $("escanerMsg").textContent = "Apunta al QR de la tarjeta del cliente";
+      buscando = true;
+      const lienzo = document.createElement("canvas"), ctx = lienzo.getContext("2d", { willReadFrequently: true });
+      const paso = async () => {
+        if (!buscando) return;
+        if (v.readyState >= 2 && v.videoWidth) {
+          let texto = null;
+          if (detector) {
+            try { const r = await detector.detect(v); if (r.length) texto = r[0].rawValue; } catch {}
+          } else {
+            const w = Math.min(640, v.videoWidth), h = Math.round(v.videoHeight * w / v.videoWidth);
+            lienzo.width = w; lienzo.height = h; ctx.drawImage(v, 0, 0, w, h);
+            const r = jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "dontInvert" });
+            if (r) texto = r.data;
+          }
+          if (texto) {
+            const serie = serieDeTexto(texto);
+            if (serie) { cerrarEscaner(); if (navigator.vibrate) navigator.vibrate(60); mostrarFicha(serie); return; }
+            $("escanerMsg").textContent = "Ese QR no es una tarjeta de sellos. Prueba con el de la tarjeta del cliente.";
+          }
+        }
+        requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    } catch (e) {
+      $("escanerMsg").textContent = e.name === "NotAllowedError"
+        ? "No hay permiso para usar la cámara. Actívalo en los ajustes del navegador para esta página."
+        : e.name === "NotFoundError" ? "Este dispositivo no tiene cámara." : "No se pudo abrir la cámara: " + e.message;
+    }
+  }
+  function cerrarEscaner() {
+    buscando = false;
+    if (flujo) flujo.getTracks().forEach((t) => t.stop());
+    flujo = null; $("video").srcObject = null; $("escaner").hidden = true;
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden && flujo) cerrarEscaner(); });
+
+  async function mostrarFicha(serie) {
+    const f = $("ficha"), nom = $("fichaNombre"), det = $("fichaDetalle"), bt = $("fichaBotones");
+    f.hidden = false; nom.textContent = "Buscando la tarjeta…"; det.textContent = ""; bt.textContent = "";
+    const boton = (txt, fn, primary) => { const b = document.createElement("button"); b.textContent = txt; if (primary) b.className = "primary"; b.onclick = fn; bt.appendChild(b); };
+    const otra = () => boton("Escanear otra", abrirEscaner);
+    try {
+      const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
+      if (!r.length) { nom.textContent = "Tarjeta no encontrada"; det.textContent = "No es de tu negocio o se ha borrado."; otra(); return; }
+      const t = r[0], total = t.negocio.visitas_para_premio;
+      colores[t.serie] = t.negocio;
+      nom.textContent = t.nombre_cliente;
+      det.textContent = `${t.negocio.nombre} · ${t.sellos}/${total} sellos` + (t.sellos >= total ? " · ¡tiene el premio!" : "");
+      const hacer = (accion) => async () => { await accionar(t.serie, accion); f.hidden = true; };
+      if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar", hacer("sello"), true);
+      if (t.sellos > 0) boton("Deshacer último", hacer("anulacion"));
+      otra();
+    } catch (e) {
+      nom.textContent = "No se pudo leer la tarjeta"; det.textContent = MENSAJES[e.message] || e.message; otra();
+    }
+  }
+
   async function accionar(serie, accion) {
     const e = $("estado"); e.className = "muted"; e.textContent = "Enviando…";
-    if (caducada()) { guardar(null); pintar(); return; }
+    if (!(await asegurarSesion())) { pintar(); return; }
     let data;
     try {
       const r = await fetch(`${SUPABASE_URL}/functions/v1/sellar`, {
@@ -198,14 +342,17 @@
     $("loginMsg").textContent = "Entrando…";
     try { await entrar($("email").value.trim(), $("pass").value); $("loginMsg").textContent = ""; }
     catch (err) { $("loginMsg").textContent = err.message === "invalid_credentials" ? "Email o contraseña incorrectos." : "No se pudo entrar: " + err.message; }
-    pintar();
+    pintarYAbrir();
   };
   $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
   $("salir").onclick = () => { guardar(null); pintar(); };
   $("recargar").onclick = pintar;
   $("corte").onclick = () => { $("corte").hidden = true; };
-  document.querySelector("[data-from-input]").onclick = () => { const s = $("serie").value.trim(); if (s) accionar(s, "sello"); };
-  pintar();
+  document.querySelector("[data-from-input]").onclick = () => { const s = $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
+  $("btnEscanear").onclick = abrirEscaner;
+  const pintarYAbrir = async () => { await pintar(); abrirPendiente(); };
+  $("cerrarEscaner").onclick = cerrarEscaner;
+  pintarYAbrir();
 </script>
 </body>
 </html>
