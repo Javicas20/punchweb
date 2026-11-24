@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef2ee">
+<meta name="robots" content="noindex">
+<title>Punch · Administración</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23557b6b'/%3E%3Cg transform='translate(1 -5)'%3E%3Crect x='16' y='20' width='9' height='36' rx='4.5' fill='%23fff'/%3E%3Ccircle cx='34' cy='31' r='12.5' fill='none' stroke='%23fff' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap">
+<style>
+  /* Marca Punch · paleta «salvia y niebla»: vidrio claro sobre un fondo vivo de verdes suaves */
+  :root{
+    --fondo:#eef2ee; --texto:#1d2a24; --suave:rgba(29,42,36,.66); --tenue:rgba(29,42,36,.44);
+    --vidrio:rgba(255,255,255,.58); --vidrio-fuerte:rgba(255,255,255,.78); --filo:rgba(255,255,255,.9); --brillo:rgba(255,255,255,.95);
+    --linea:rgba(29,42,36,.1); --campo:rgba(255,255,255,.72);
+    --acento:#557b6b; --acento-osc:#3f6355; --menta:#cfe0d6; --arena:#e7ece2; --bruma:#d8e6e4;
+    --ok:#2f7d57; --error:#b5473a; --aviso:#a8741c;
+    --sombra:0 22px 50px rgba(30,52,42,.12),0 2px 6px rgba(30,52,42,.05);
+    --display:"Instrument Serif","Iowan Old Style",Georgia,serif;
+    --cuerpo:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;background:var(--fondo);color:var(--texto);font:15px/1.5 var(--cuerpo);-webkit-font-smoothing:antialiased}
+  body{overflow-x:hidden}
+  [hidden]{display:none!important}
+  button,input{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--acento);outline-offset:3px}
+
+  .orbes{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .orbes i{position:absolute;border-radius:50%;filter:blur(70px);animation:flotar 22s ease-in-out infinite alternate}
+  .orbes i:nth-child(1){width:55vmax;height:55vmax;left:-20vmax;top:-22vmax;background:var(--menta);opacity:.95}
+  .orbes i:nth-child(2){width:42vmax;height:42vmax;right:-16vmax;top:20vh;background:var(--bruma);opacity:.9;animation-duration:26s}
+  .orbes i:nth-child(3){width:48vmax;height:48vmax;left:8vw;bottom:-30vmax;background:var(--arena);opacity:.95;animation-duration:30s}
+  @keyframes flotar{to{transform:translate(5vmax,3vmax) scale(1.06)}}
+
+  .vidrio{position:relative;background:var(--vidrio);border:1px solid var(--filo);border-radius:26px;
+    backdrop-filter:blur(28px) saturate(150%);-webkit-backdrop-filter:blur(28px) saturate(150%);
+    box-shadow:inset 0 1px 0 var(--brillo),var(--sombra)}
+  .vidrio::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(165deg,rgba(255,255,255,.55),rgba(255,255,255,0) 40%)}
+
+  .marca{display:flex;align-items:center;gap:9px;color:var(--texto);text-decoration:none}
+  .marca svg{width:34px;height:34px;color:var(--acento)}
+  .marca span{font:400 30px/1 var(--display);letter-spacing:-.01em}
+
+  .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid var(--linea);border-radius:14px;padding:12px 16px;
+    background:var(--vidrio-fuerte);color:var(--texto);font-weight:600;transition:transform .15s ease,background .2s ease,box-shadow .2s ease;box-shadow:0 1px 2px rgba(30,52,42,.06)}
+  .btn:hover{background:#fff} .btn:active{transform:scale(.97)}
+  .btn svg{width:20px;height:20px;flex:none}
+  .btn.principal{background:var(--acento);border-color:var(--acento);color:#fff;box-shadow:0 10px 24px rgba(63,99,85,.28),inset 0 1px 0 rgba(255,255,255,.25)}
+  .btn.principal:hover{background:var(--acento-osc)}
+  .btn:disabled{opacity:.5;cursor:default;transform:none}
+  .btn.ancho{width:100%;padding:15px;font-size:16px}
+  .btn.icono{padding:9px;border-radius:12px}
+
+  .campo{display:grid;gap:6px;font-size:13px;font-weight:500;color:var(--suave)}
+  .campo input,.entrada input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(30,52,42,.05)}
+  .campo input::placeholder{color:var(--tenue)}
+  .campo input:focus,.entrada input:focus{outline:none;border-color:var(--acento);background:#fff;box-shadow:0 0 0 4px rgba(85,123,107,.16)}
+  .msg{min-height:1.4em;margin:0;text-align:center;font-size:14px;color:var(--suave)}
+  .msg.error{color:var(--error)}
+  .pie{text-align:center;font-size:12px;color:var(--tenue)}
+  .contenedor{position:relative;z-index:1;max-width:760px;margin:0 auto;min-height:100vh;min-height:100dvh;
+    padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+    display:flex;flex-direction:column;gap:16px}
+  .contenedor > .pie{margin-top:auto}
+  .login{margin:auto;width:100%;max-width:440px;padding:32px 24px 24px;display:grid;gap:18px}
+  .login .marca{justify-content:center}
+  .login .marca svg{width:80px;height:80px;padding:15px;border-radius:24px;background:#fff;box-shadow:0 14px 30px rgba(30,52,42,.14)}
+  .login h1{margin:0;text-align:center;font:400 15px/1.5 var(--cuerpo);color:var(--suave)}
+  .login h1 b{display:block;font:400 28px/1.15 var(--display);color:var(--texto);margin-bottom:4px}
+
+  .barra{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 16px;border-radius:22px}
+  .barra .titulo{font:400 15px var(--cuerpo);color:var(--suave);border-left:1px solid var(--linea);padding-left:10px;margin-left:2px}
+  .barra .izq{display:flex;align-items:center;gap:8px}
+
+  .seccion{padding:22px;display:grid;gap:16px}
+  .seccion .cab{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .seccion h2{margin:0;font:400 30px/1.1 var(--display)}
+  .seccion h3{margin:0;font:400 22px/1.15 var(--display)}
+  .sub{margin:4px 0 0;color:var(--suave);font-size:14px}
+
+  /* Formulario de negocio */
+  .rejilla{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+  @media (max-width:560px){.rejilla{grid-template-columns:minmax(0,1fr)}}
+  .rejilla .ancho{grid-column:1/-1}
+  .campo small{font-weight:400;color:var(--tenue)}
+  .campo select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto)}
+  .colores{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .color{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:13px;color:var(--suave);cursor:pointer}
+  .color input{width:34px;height:34px;border:0;padding:0;border-radius:10px;background:none;cursor:pointer;flex:none}
+  .estilos{display:flex;gap:8px;flex-wrap:wrap}
+  .estilo{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:999px;border:1px solid var(--linea);background:var(--campo);font-size:13px;cursor:pointer}
+  .estilo i{width:18px;height:18px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+
+  .previa{border-radius:18px;overflow:hidden;box-shadow:0 18px 40px rgba(30,52,42,.18);max-width:340px;justify-self:center;width:100%}
+  .previa .t{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;gap:10px}
+  .previa .t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .previa .k{font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+  .previa .v{font-size:15px;font-weight:500}
+  .previa .s{padding:12px 14px;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;justify-items:center}
+  .previa .s i{width:30px;height:30px;border-radius:50%;border:2px dashed;opacity:.5}
+  .previa .s i.on{opacity:1;border-style:solid}
+  .previa .p{display:flex;justify-content:space-between;padding:10px 14px 14px;gap:10px}
+  .previa .p div:last-child{text-align:right}
+
+  /* Negocios */
+  .negocios{display:grid;gap:10px}
+  .negocio{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px;border-radius:18px;background:rgba(255,255,255,.62);border:1px solid var(--linea)}
+  .negocio .muestra{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font:400 22px var(--display)}
+  .negocio .nom{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .negocio .datos{font-size:12px;color:var(--tenue)}
+  .negocio.activo{border-color:var(--acento);box-shadow:0 0 0 3px rgba(85,123,107,.14)}
+  .vacio{padding:18px;text-align:center;color:var(--suave)}
+
+  /* Detalle */
+  .pestanas{display:flex;gap:6px;flex-wrap:wrap}
+  .pestanas button{border:1px solid var(--linea);background:var(--campo);border-radius:999px;padding:8px 14px;font-weight:500;font-size:14px}
+  .pestanas button[aria-selected="true"]{background:var(--acento);border-color:var(--acento);color:#fff}
+  .enlace{display:grid;gap:10px;padding:14px;border-radius:16px;background:rgba(255,255,255,.7);border:1px solid var(--linea)}
+  .enlace code{font:12.5px/1.45 ui-monospace,Menlo,monospace;word-break:break-all;color:var(--texto)}
+  .acciones{display:flex;gap:8px;flex-wrap:wrap}
+  .acciones .btn{flex:1;min-width:150px}
+  .qrcaja{justify-self:center;background:#fff;padding:14px;border-radius:18px;box-shadow:0 12px 30px rgba(30,52,42,.12)}
+  .qrcaja img{display:block;width:200px;height:200px;image-rendering:pixelated}
+  .invs{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .invs li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.6);border:1px solid var(--linea);font-size:14px}
+  .invs .mail{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .invs .est{font-size:12px;color:var(--tenue)}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;margin-right:6px}
+  .pill.pend{background:#fbefd5;color:#7a5413} .pill.usada{background:#dcefe4;color:#1f6141} .pill.cad{background:#ece9e6;color:#6b6560}
+
+  .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;width:min(92vw,520px);
+    padding:13px 16px;border-radius:16px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;background:var(--vidrio-fuerte)}
+  .toast.ver{opacity:1;transform:translate(-50%,0)}
+  .toast.ok{border-color:rgba(47,125,87,.45)} .toast.error{border-color:rgba(181,71,58,.5);color:var(--error)}
+  .sinjs{position:relative;z-index:2;margin:16px;padding:12px 14px;border-radius:14px;background:#f6dcd8;color:#7a2a20;font-weight:600}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logoPunch" viewBox="0 0 64 64">
+      <g transform="translate(1 -5)" fill="currentColor">
+        <rect x="16" y="20" width="9" height="36" rx="4.5"/>
+        <circle cx="34" cy="31" r="12.5" fill="none" stroke="currentColor" stroke-width="9"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+<div class="orbes" aria-hidden="true"><i></i><i></i><i></i></div>
+<p class="sinjs" id="arranque">La página no se está ejecutando. Ábrela en Chrome o Safari.</p>
+
+<div class="contenedor">
+  <!-- Acceso -->
+  <section class="login vidrio" id="login" aria-labelledby="tituloLogin">
+    <div class="marca" role="img" aria-label="Punch"><svg aria-hidden="true"><use href="#logoPunch"/></svg></div>
+    <h1 id="tituloLogin"><b>Administración</b>Da de alta negocios e invita a sus dueños</h1>
+    <label class="campo" for="email">Email<input id="email" type="email" autocomplete="username" inputmode="email"></label>
+    <label class="campo" for="pass">Contraseña<input id="pass" type="password" autocomplete="current-password"></label>
+    <button class="btn principal ancho" id="entrar">Entrar</button>
+    <p class="msg" id="loginMsg" role="status"></p>
+  </section>
+
+  <div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
+    <header class="barra vidrio">
+      <div class="izq"><div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div><span class="titulo">Administración</span></div>
+      <button class="btn icono" id="salir" title="Salir" aria-label="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button>
+    </header>
+
+    <!-- Negocios -->
+    <section class="seccion vidrio" aria-labelledby="tituloNegocios">
+      <div class="cab">
+        <h2 id="tituloNegocios">Negocios</h2>
+        <button class="btn principal" id="btnNuevo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nuevo negocio</button>
+      </div>
+      <div class="negocios" id="negocios"></div>
+    </section>
+
+    <!-- Nuevo negocio -->
+    <section class="seccion vidrio" id="nuevo" hidden aria-labelledby="tituloNuevo">
+      <div class="cab"><h2 id="tituloNuevo">Nuevo negocio</h2><button class="btn" id="cancelarNuevo">Cancelar</button></div>
+      <form id="formNegocio" class="rejilla" novalidate>
+        <label class="campo ancho" for="nNombre">Nombre del negocio<input id="nNombre" maxlength="40" placeholder="Por ejemplo, Barbería Sur" required></label>
+        <label class="campo" for="nPremio">Premio<input id="nPremio" maxlength="40" placeholder="Corte gratis" required></label>
+        <label class="campo" for="nVisitas">Visitas para el premio<select id="nVisitas"></select></label>
+        <label class="campo" for="nSingular">Cada visita se llama<input id="nSingular" maxlength="20" placeholder="corte" value="visita"></label>
+        <label class="campo" for="nPlural">En plural<input id="nPlural" maxlength="20" placeholder="cortes" value="visitas"></label>
+        <label class="campo ancho" for="nPrograma">Nombre del programa <small>(opcional; si no, «Club + nombre»)</small><input id="nPrograma" maxlength="60" placeholder="Club Barbería Sur"></label>
+        <div class="campo ancho"><span>Estilo de la tarjeta</span>
+          <div class="estilos" id="estilos"></div>
+          <div class="colores">
+            <label class="color" for="cFondo"><input id="cFondo" type="color" value="#1f2a26">Fondo</label>
+            <label class="color" for="cTexto"><input id="cTexto" type="color" value="#ffffff">Texto</label>
+            <label class="color" for="cAcento"><input id="cAcento" type="color" value="#9fd3b5">Detalles</label>
+          </div>
+        </div>
+        <label class="campo" for="nTelefono">Teléfono <small>(opcional)</small><input id="nTelefono" type="tel" maxlength="20"></label>
+        <label class="campo" for="nDireccion">Dirección <small>(opcional)</small><input id="nDireccion" maxlength="80"></label>
+        <div class="ancho" style="display:grid;gap:8px"><span class="campo">Vista previa</span>
+          <div class="previa" id="previa" aria-hidden="true">
+            <div class="t"><b id="pNombre"></b><span><span class="k" id="pK1">Sellos</span> <span id="pCuenta"></span></span></div>
+            <div class="s" id="pSellos"></div>
+            <div class="p"><div><div class="k" id="pK2">Te quedan</div><div class="v" id="pQuedan"></div></div><div><div class="k" id="pK3">Premio</div><div class="v" id="pPremio"></div></div></div>
+          </div>
+        </div>
+        <button class="btn principal ancho" id="crear" type="submit" style="grid-column:1/-1">Crear negocio</button>
+        <p class="msg" id="msgNuevo" role="alert" style="grid-column:1/-1"></p>
+      </form>
+    </section>
+
+    <!-- Detalle -->
+    <section class="seccion vidrio" id="detalle" hidden aria-labelledby="tituloDetalle">
+      <div class="cab"><div><h2 id="tituloDetalle"></h2><p class="sub" id="detalleSub"></p></div></div>
+      <div class="pestanas" role="tablist">
+        <button role="tab" id="tabInvitar" aria-selected="true">Invitar</button>
+        <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
+        <button role="tab" id="tabInvs" aria-selected="false">Invitaciones</button>
+      </div>
+
+      <div id="panInvitar" style="display:grid;gap:12px">
+        <form id="formInvitar" class="rejilla" novalidate>
+          <label class="campo" for="iEmail">Email del dueño o empleado<input id="iEmail" type="email" inputmode="email" placeholder="dueno@negocio.com"></label>
+          <label class="campo" for="iRol">Rol<select id="iRol"><option value="dueno">Dueño</option><option value="empleado">Empleado</option></select></label>
+          <button class="btn principal ancho" type="submit" style="grid-column:1/-1">Generar invitación</button>
+        </form>
+        <p class="msg" id="msgInvitar" role="alert"></p>
+        <div class="enlace" id="enlaceInv" hidden>
+          <span class="campo">Enlace de invitación · caduca en 7 días</span>
+          <code id="urlInv"></code>
+          <div class="acciones">
+            <button class="btn" id="copiarInv">Copiar enlace</button>
+            <a class="btn principal" id="correoInv" href="#" style="text-decoration:none">Abrir en el correo</a>
+          </div>
+        </div>
+      </div>
+
+      <div id="panQR" hidden style="display:grid;gap:12px">
+        <p class="sub" style="margin:0">Imprime este QR en el mostrador. Al escanearlo, el cliente crea su tarjeta de sellos.</p>
+        <div class="qrcaja" id="qrAlta"></div>
+        <div class="enlace"><code id="urlAlta"></code>
+          <div class="acciones"><button class="btn" id="copiarAlta">Copiar enlace</button><button class="btn principal" id="descargarQR">Descargar QR</button></div>
+        </div>
+      </div>
+
+      <div id="panInvs" hidden><ul class="invs" id="listaInvs"></ul></div>
+    </section>
+  </div>
+  <p class="pie" id="pie">Punch · administración</p>
+</div>
+<div class="toast vidrio" id="estado" role="status" aria-live="polite"></div>
+<script>
+  const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
+  const WEB = new URL("./", location.href).href.startsWith("http") ? new URL("./", location.href).href : "https://javicas20.github.io/punchweb/";
+  const $ = (id) => document.getElementById(id);
+  $("arranque").hidden = true;
+
+  const ERRORES = {
+    no_autorizado: "Esta cuenta no tiene permisos de administración.",
+    falta_nombre: "Escribe el nombre del negocio.", falta_premio: "Escribe el premio.",
+    visitas_no_validas: "Las visitas deben estar entre 3 y 12.", color_no_valido: "Algún color no es válido.",
+    email_no_valido: "El email no parece correcto.", rol_no_valido: "Elige un rol.", negocio_no_encontrado: "Ese negocio ya no existe.",
+    sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
+  };
+  let avisoT;
+  function aviso(t, tipo = "") { const e = $("estado"); e.textContent = t; e.className = `toast vidrio ver ${tipo}`; clearTimeout(avisoT); avisoT = setTimeout(() => e.classList.remove("ver"), tipo === "error" ? 7000 : 4000); }
+
+  // ── Sesión (compartida con el panel del negocio) ──
+  let sesion = null;
+  try { sesion = JSON.parse(localStorage.getItem("punch-sesion") || "null"); } catch {}
+  const guardar = (s) => { sesion = s; try { s ? localStorage.setItem("punch-sesion", JSON.stringify(s)) : localStorage.removeItem("punch-sesion"); } catch {} };
+  async function asegurarSesion() {
+    if (sesion && Date.now() / 1000 > sesion.expires_at - 30) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ refresh_token: sesion.refresh_token }) });
+        if (!r.ok) throw 0; const d = await r.json();
+        guardar({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+      } catch { guardar(null); }
+    }
+    return !!sesion;
+  }
+  async function rpc(fn, args = {}) {
+    if (!(await asegurarSesion())) throw new Error("sin_sesion");
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, { method: "POST", headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}`, "content-type": "application/json" }, body: JSON.stringify(args) });
+    const d = await r.json().catch(() => null);
+    if (r.status === 401) { guardar(null); throw new Error("sin_sesion"); }
+    if (!r.ok) throw new Error(d?.message || `HTTP ${r.status}`);
+    return d;
+  }
+  const textoError = (e) => ERRORES[e.message] || "No se pudo completar: " + e.message;
+
+  // ── Colores ──
+  const hexARgb = (h) => { const n = parseInt(h.slice(1), 16); return `rgb(${n >> 16},${(n >> 8) & 255},${n & 255})`; };
+  const rgbAHex = (r) => { const m = String(r).match(/(\d+)\D+(\d+)\D+(\d+)/); return m ? "#" + m.slice(1).map((x) => (+x).toString(16).padStart(2, "0")).join("") : "#777777"; };
+  const claro = (h) => { const n = parseInt(h.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 160; };
+  const ESTILOS = [
+    ["Bosque", "#1f2a26", "#ffffff", "#9fd3b5"], ["Noche", "#15161c", "#f3efe8", "#cdb38a"], ["Ciruela", "#2b2140", "#fbeee6", "#f2a7c3"],
+    ["Océano", "#14324a", "#ffffff", "#7fd1e8"], ["Arena", "#efe7da", "#3a2c1e", "#a0632d"], ["Perla", "#f2f1f6", "#221e30", "#6f5ea8"],
+  ];
+
+  // ── Pantallas ──
+  let negocios = [], actual = null;
+  async function pintar() {
+    await asegurarSesion();
+    if (!sesion) { $("login").hidden = false; $("app").hidden = true; return; }
+    try {
+      const esAdmin = await rpc("es_admin");
+      if (!esAdmin) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").className = "msg error"; $("loginMsg").textContent = ERRORES.no_autorizado; return; }
+    } catch (e) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").textContent = textoError(e); return; }
+    $("login").hidden = true; $("app").hidden = false;
+    await cargarNegocios();
+  }
+
+  async function cargarNegocios() {
+    try { negocios = await rpc("admin_negocios"); } catch (e) { aviso(textoError(e), "error"); return; }
+    const c = $("negocios"); c.textContent = "";
+    if (!negocios.length) { const p = document.createElement("p"); p.className = "vacio"; p.textContent = "Todavía no hay negocios. Crea el primero con «Nuevo negocio»."; c.appendChild(p); }
+    for (const n of negocios) {
+      const el = document.createElement("div"); el.className = "negocio" + (actual?.id === n.id ? " activo" : "");
+      const m = document.createElement("div"); m.className = "muestra"; m.style.background = n.color_fondo; m.style.color = n.color_etiquetas; m.textContent = n.nombre.charAt(0).toUpperCase();
+      const info = document.createElement("div"); info.style.minWidth = "0";
+      const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = n.nombre;
+      const d = document.createElement("div"); d.className = "datos";
+      d.textContent = `${n.tarjetas} ${n.tarjetas == 1 ? "cliente" : "clientes"} · ${n.personal} en el equipo` + (n.invitaciones_pendientes > 0 ? ` · ${n.invitaciones_pendientes} invitación pendiente` : "");
+      info.append(nom, d);
+      const b = document.createElement("button"); b.className = "btn"; b.textContent = "Gestionar"; b.onclick = () => abrir(n.id);
+      el.append(m, info, b); c.appendChild(el);
+    }
+  }
+
+  // ── Nuevo negocio ──
+  for (let v = 3; v <= 12; v++) { const o = document.createElement("option"); o.value = v; o.textContent = v; if (v === 10) o.selected = true; $("nVisitas").appendChild(o); }
+  for (const [nombre, f, t, a] of ESTILOS) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "estilo";
+    const i = document.createElement("i"); i.style.background = `linear-gradient(135deg,${f} 55%,${a} 55%)`;
+    b.append(i, nombre); b.onclick = () => { $("cFondo").value = f; $("cTexto").value = t; $("cAcento").value = a; previa(); };
+    $("estilos").appendChild(b);
+  }
+  function previa() {
+    const f = $("cFondo").value, t = $("cTexto").value, a = $("cAcento").value, total = +$("nVisitas").value;
+    const p = $("previa"); p.style.background = f; p.style.color = t;
+    ["pK1", "pK2", "pK3"].forEach((id) => ($(id).style.color = a));
+    $("pNombre").textContent = $("nNombre").value.trim() || "Tu negocio";
+    $("pCuenta").textContent = `3/${total}`;
+    const quedan = total - 3, plural = $("nPlural").value.trim() || "visitas", singular = $("nSingular").value.trim() || "visita";
+    $("pQuedan").textContent = `${quedan} ${quedan === 1 ? singular : plural}`;
+    $("pPremio").textContent = $("nPremio").value.trim() || "Premio";
+    const tinta = claro(f) ? "rgb(30,34,32)" : "rgb(255,255,255)";
+    const s = $("pSellos"); s.textContent = ""; s.style.gridTemplateColumns = `repeat(${Math.min(6, Math.ceil((total + 1) / 2))},1fr)`;
+    for (let i = 0; i <= total; i++) { const d = document.createElement("i"); d.style.borderColor = tinta; if (i < 3) { d.className = "on"; d.style.background = tinta.replace("rgb", "rgba").replace(")", ",.16)"); } s.appendChild(d); }
+  }
+  ["nNombre", "nPremio", "nVisitas", "nSingular", "nPlural", "cFondo", "cTexto", "cAcento"].forEach((id) => $(id).addEventListener("input", previa));
+  $("btnNuevo").onclick = () => { $("nuevo").hidden = false; $("detalle").hidden = true; previa(); $("nuevo").scrollIntoView({ behavior: "smooth" }); $("nNombre").focus(); };
+  $("cancelarNuevo").onclick = () => { $("nuevo").hidden = true; };
+  $("formNegocio").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const m = $("msgNuevo"); m.className = "msg";
+    if (!$("nNombre").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_nombre; return; }
+    if (!$("nPremio").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_premio; return; }
+    $("crear").disabled = true; m.textContent = "Creando…";
+    try {
+      const [n] = await rpc("admin_crear_negocio", {
+        p_nombre: $("nNombre").value, p_programa: $("nPrograma").value, p_premio: $("nPremio").value, p_visitas: +$("nVisitas").value,
+        p_unidad_singular: $("nSingular").value, p_unidad_plural: $("nPlural").value,
+        p_color_fondo: hexARgb($("cFondo").value), p_color_texto: hexARgb($("cTexto").value), p_color_etiquetas: hexARgb($("cAcento").value),
+        p_telefono: $("nTelefono").value, p_direccion: $("nDireccion").value,
+      });
+      m.textContent = ""; $("formNegocio").reset(); $("nuevo").hidden = true;
+      aviso(`Negocio creado. Ahora invita a su dueño.`, "ok");
+      await cargarNegocios(); abrir(n.id);
+    } catch (e) { m.className = "msg error"; m.textContent = textoError(e); }
+    finally { $("crear").disabled = false; }
+  });
+
+  // ── Detalle de un negocio ──
+  function pestana(cual) {
+    for (const [tab, pan] of [["tabInvitar", "panInvitar"], ["tabQR", "panQR"], ["tabInvs", "panInvs"]]) {
+      $(tab).setAttribute("aria-selected", String(tab === cual)); $(pan).hidden = tab !== cual;
+    }
+    if (cual === "tabQR") pintarQR();
+    if (cual === "tabInvs") cargarInvitaciones();
+  }
+  $("tabInvitar").onclick = () => pestana("tabInvitar");
+  $("tabQR").onclick = () => pestana("tabQR");
+  $("tabInvs").onclick = () => pestana("tabInvs");
+
+  function abrir(id) {
+    actual = negocios.find((n) => n.id === id); if (!actual) return;
+    $("detalle").hidden = false; $("nuevo").hidden = true;
+    $("tituloDetalle").textContent = actual.nombre;
+    $("detalleSub").textContent = `${actual.premio} cada ${actual.visitas_para_premio} visitas · ${actual.tarjetas} clientes · ${actual.personal} en el equipo`;
+    $("enlaceInv").hidden = true; $("msgInvitar").textContent = ""; $("iEmail").value = "";
+    pestana("tabInvitar"); cargarNegocios();
+    $("detalle").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  $("formInvitar").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const m = $("msgInvitar"); m.className = "msg"; m.textContent = "Generando…";
+    try {
+      const [inv] = await rpc("admin_invitar", { p_negocio: actual.id, p_email: $("iEmail").value, p_rol: $("iRol").value });
+      const url = `${WEB}activar.html?i=${inv.token}`;
+      $("urlInv").textContent = url; $("enlaceInv").hidden = false; m.textContent = "";
+      const email = $("iEmail").value.trim().toLowerCase();
+      const asunto = `Tu panel de Punch para ${actual.nombre}`;
+      const cuerpo = `Hola:\n\nYa tienes listo el panel de Punch para ${actual.nombre}, donde podrás sellar las visitas de tus clientes desde el móvil.\n\nPara activarlo, abre este enlace y crea tu contraseña (caduca en 7 días):\n${url}\n\nUn saludo`;
+      $("correoInv").href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+      aviso("Invitación creada. Cópiala o ábrela en tu correo.", "ok"); cargarNegocios();
+    } catch (e) { m.className = "msg error"; m.textContent = textoError(e); }
+  });
+  async function copiar(texto) {
+    try { await navigator.clipboard.writeText(texto); aviso("Copiado.", "ok"); }
+    catch { aviso("No se pudo copiar: selecciónalo y cópialo a mano.", "error"); }
+  }
+  $("copiarInv").onclick = () => copiar($("urlInv").textContent);
+
+  // ── QR de alta ──
+  function cargarQRLib() {
+    if (window.qrcode) return Promise.resolve();
+    return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"; s.onload = ok; s.onerror = () => ko(new Error("no se pudo cargar el generador de QR")); document.head.appendChild(s); });
+  }
+  const urlAlta = () => `${WEB}alta.html?n=${actual.slug}&c=${actual.codigo_alta}`;
+  async function pintarQR() {
+    $("urlAlta").textContent = urlAlta();
+    try { await cargarQRLib(); } catch (e) { $("qrAlta").textContent = e.message; return; }
+    const qr = qrcode(0, "M"); qr.addData(urlAlta()); qr.make();
+    $("qrAlta").innerHTML = qr.createImgTag(6, 0); $("qrAlta").querySelector("img").alt = `QR de alta de ${actual.nombre}`;
+  }
+  $("copiarAlta").onclick = () => copiar(urlAlta());
+  $("descargarQR").onclick = async () => {
+    await cargarQRLib();
+    const qr = qrcode(0, "M"); qr.addData(urlAlta()); qr.make();
+    const n = qr.getModuleCount(), escala = 24, borde = 4, lado = (n + borde * 2) * escala;
+    const c = document.createElement("canvas"); c.width = c.height = lado; const x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, lado, lado); x.fillStyle = "#000";
+    for (let f = 0; f < n; f++) for (let k = 0; k < n; k++) if (qr.isDark(f, k)) x.fillRect((k + borde) * escala, (f + borde) * escala, escala, escala);
+    const a = document.createElement("a"); a.download = `qr-alta-${actual.slug}.png`; a.href = c.toDataURL("image/png"); a.click();
+  };
+
+  // ── Invitaciones ──
+  async function cargarInvitaciones() {
+    const ul = $("listaInvs"); ul.textContent = "";
+    let invs = [];
+    try { invs = await rpc("admin_invitaciones", { p_negocio: actual.id }); } catch (e) { aviso(textoError(e), "error"); return; }
+    if (!invs.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay invitaciones."; ul.appendChild(li); return; }
+    const fecha = (d) => new Date(d).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+    for (const i of invs) {
+      const li = document.createElement("li");
+      const info = document.createElement("div"); info.style.minWidth = "0";
+      const mail = document.createElement("div"); mail.className = "mail"; mail.textContent = i.email;
+      const est = document.createElement("div"); est.className = "est";
+      const pill = document.createElement("span"); pill.className = "pill";
+      const pendiente = !i.usada_en && new Date(i.expira_en) > new Date();
+      if (i.usada_en) { pill.classList.add("usada"); pill.textContent = "Activada"; }
+      else if (pendiente) { pill.classList.add("pend"); pill.textContent = "Pendiente"; }
+      else { pill.classList.add("cad"); pill.textContent = "Caducada"; }
+      est.append(pill, `${i.rol === "dueno" ? "Dueño" : "Empleado"} · ` + (i.usada_en ? `activada el ${fecha(i.usada_en)}` : pendiente ? `caduca el ${fecha(i.expira_en)}` : `enviada el ${fecha(i.creada_en)}`));
+      info.append(mail, est); li.appendChild(info);
+      if (pendiente) {
+        const b = document.createElement("button"); b.className = "btn"; b.textContent = "Anular";
+        b.onclick = async () => { try { await rpc("admin_anular_invitacion", { p_id: i.id }); aviso("Invitación anulada.", "ok"); cargarInvitaciones(); cargarNegocios(); } catch (e) { aviso(textoError(e), "error"); } };
+        li.appendChild(b);
+      }
+      ul.appendChild(li);
+    }
+  }
+
+  // ── Acceso ──
+  $("entrar").onclick = async () => {
+    const m = $("loginMsg"); m.className = "msg"; m.textContent = "Entrando…"; $("entrar").disabled = true;
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ email: $("email").value.trim(), password: $("pass").value }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error_code === "invalid_credentials" ? "Email o contraseña incorrectos." : "No se pudo entrar.");
+      guardar({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+      m.textContent = ""; await pintar();
+    } catch (e) { m.className = "msg error"; m.textContent = e.message; }
+    finally { $("entrar").disabled = false; }
+  };
+  $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
+  $("salir").onclick = () => { guardar(null); actual = null; $("detalle").hidden = true; pintar(); };
+  pintar();
+</script>
+</body>
+</html>
