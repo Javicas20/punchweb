@@ -17,6 +17,31 @@
   li{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}
   .n{font-variant-numeric:tabular-nums;font-weight:600} .ok{color:var(--ok)} .err{color:var(--err)}
   [hidden]{display:none!important}
+  /* Animación de corte al sellar */
+  .corte{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(10,8,22,.62);backdrop-filter:blur(3px);cursor:pointer}
+  .escena{position:relative;width:220px;height:260px;display:grid;justify-items:center}
+  .sello{position:relative;width:180px;height:180px}
+  .mitad{position:absolute;inset:0;border-radius:50%;border:5px dashed var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+  .izq{transform-origin:50% 100%;clip-path:inset(-10px 50% -10px -10px);animation:sepIzq .55s .95s cubic-bezier(.3,.7,.4,1) forwards}
+  .der{transform-origin:50% 100%;clip-path:inset(-10px -10px -10px 50%);animation:sepDer .55s .95s cubic-bezier(.3,.7,.4,1) forwards}
+  .linea{position:absolute;left:calc(50% - 1.5px);top:-12px;width:3px;height:204px;background:var(--c);transform-origin:top;transform:scaleY(0);animation:linea .85s .1s linear forwards,fuera .2s .95s forwards;box-shadow:0 0 10px var(--c)}
+  .tijeras{position:absolute;left:calc(50% - 34px);top:-70px;width:68px;height:68px;color:#fff;transform:rotate(90deg);animation:bajar .85s .1s linear forwards,fuera .25s 1s forwards;filter:drop-shadow(0 0 8px var(--c))}
+  .tijeras .a{transform-origin:12px 12px;animation:hojaA .17s 5 alternate ease-in-out}
+  .tijeras .b{transform-origin:12px 12px;animation:hojaB .17s 5 alternate ease-in-out}
+  .nuevo{position:absolute;inset:16px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:var(--f);transform:scale(0);animation:pop .45s 1.25s cubic-bezier(.2,1.6,.4,1) forwards}
+  .nuevo svg{width:64px;height:64px}
+  .rotulo{margin-top:22px;color:#fff;text-align:center;opacity:0;animation:aparece .3s 1.45s forwards}
+  .rotulo strong{display:block;font-size:22px} .rotulo span{font-size:15px;opacity:.85}
+  @keyframes bajar{from{top:-70px}to{top:170px}}
+  @keyframes linea{to{transform:scaleY(1)}}
+  @keyframes hojaA{from{transform:rotate(14deg)}to{transform:rotate(-2deg)}}
+  @keyframes hojaB{from{transform:rotate(-14deg)}to{transform:rotate(2deg)}}
+  @keyframes sepIzq{to{transform:translate(-70px,40px) rotate(-24deg);opacity:0}}
+  @keyframes sepDer{to{transform:translate(70px,40px) rotate(24deg);opacity:0}}
+  @keyframes fuera{to{opacity:0}}
+  @keyframes pop{to{transform:scale(1)}}
+  @keyframes aparece{to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.corte *{animation-duration:.01s!important;animation-delay:0s!important}}
 </style>
 </head>
 <body>
@@ -42,12 +67,26 @@
     <ul id="lista"></ul>
   </section>
 </main>
+<div class="corte" id="corte" hidden aria-live="polite">
+  <div class="escena">
+    <div class="sello">
+      <div class="mitad izq"></div><div class="mitad der"></div>
+      <div class="linea"></div>
+      <svg class="tijeras" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <g class="a"><circle cx="6" cy="6" r="3"/><path d="M8.1 8.1 20 20"/></g>
+        <g class="b"><circle cx="6" cy="18" r="3"/><path d="M8.1 15.9 20 4"/></g>
+      </svg>
+      <div class="nuevo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></div>
+    </div>
+    <div class="rotulo"><strong id="corteTitulo"></strong><span id="corteTexto"></span></div>
+  </div>
+</div>
 <script>
   // Datos públicos del proyecto (URL y clave publishable). Sin librerías externas.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
   const $ = (id) => document.getElementById(id);
-  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 4)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
+  { const a = $("arranque"); a.textContent = "Página lista ✓ (versión 5)"; a.style.background = "#e3f4ea"; a.style.color = "#14532d"; }
   window.addEventListener("error", (ev) => { $("loginMsg").textContent = "Error en la página: " + ev.message; });
 
   const MENSAJES = {
@@ -92,7 +131,7 @@
     try {
       const negocios = await leer("negocios?select=nombre");
       $("negocio").textContent = negocios.length ? negocios.map((n) => n.nombre).join(", ") : "Sin negocio asignado";
-      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(visitas_para_premio)&order=actualizada_en.desc&limit=50");
+      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(visitas_para_premio,color_etiquetas,color_fondo)&order=actualizada_en.desc&limit=50");
       const ul = $("lista"); ul.textContent = "";
       if (!tarjetas.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay tarjetas. Crea una desde el móvil con el enlace de alta."; ul.appendChild(li); }
       for (const t of tarjetas) {
@@ -105,6 +144,7 @@
         const n = document.createElement("span"); n.className = "n"; n.textContent = `${t.sellos}/${total}`;
         const btns = document.createElement("div"); btns.className = "row";
         const mk = (txt, accion, primary) => { const b = document.createElement("button"); b.textContent = txt; if (primary) b.className = "primary"; b.onclick = () => accionar(t.serie, accion); return b; };
+        colores[t.serie] = t.negocio;
         btns.append(completa ? mk("Canjear premio", "canje", true) : mk("Sellar", "sello", true));
         if (t.sellos > 0) btns.append(mk("Deshacer", "anulacion"));
         li.append(info, n, btns); ul.appendChild(li);
@@ -113,6 +153,19 @@
       $("estado").className = "err"; $("estado").textContent = MENSAJES[e.message] || "No se pudo cargar: " + e.message;
       if (e.message === "sin_sesion") pintar();
     }
+  }
+
+  const colores = {};
+  let corteTimer;
+  function animarCorte(serie, data) {
+    const capa = $("corte"), n = colores[serie] || {};
+    capa.style.setProperty("--c", n.color_etiquetas || "#6b3cf0");
+    capa.style.setProperty("--f", n.color_fondo || "#ffffff");
+    $("corteTitulo").textContent = data.quedan === 0 ? "¡Premio conseguido!" : `¡Sellado! ${data.sellos}/${data.visitas_para_premio}`;
+    $("corteTexto").textContent = data.quedan === 0 ? `${data.cliente} ya puede canjearlo` : `A ${data.cliente} le quedan ${data.quedan}`;
+    capa.hidden = true; void capa.offsetWidth; // reinicia la animación
+    capa.hidden = false;
+    clearTimeout(corteTimer); corteTimer = setTimeout(() => { capa.hidden = true; }, 2900);
   }
 
   async function accionar(serie, accion) {
@@ -137,6 +190,7 @@
     const fallo = (data.dispositivos > 0 && !av.enviados) || (g && g.estado !== 200 && g.estado !== 404);
     e.className = fallo ? "err" : "ok";
     e.textContent = `${data.cliente}: ${data.sellos}/${data.visitas_para_premio} sellos. ${partes.join(" ")}`;
+    if (accion === "sello") animarCorte(serie, data);
     pintar();
   }
 
@@ -149,6 +203,7 @@
   $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
   $("salir").onclick = () => { guardar(null); pintar(); };
   $("recargar").onclick = pintar;
+  $("corte").onclick = () => { $("corte").hidden = true; };
   document.querySelector("[data-from-input]").onclick = () => { const s = $("serie").value.trim(); if (s) accionar(s, "sello"); };
   pintar();
 </script>
