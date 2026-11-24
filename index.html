@@ -72,7 +72,7 @@
   /* Acceso */
   .login{margin:auto 0;padding:32px 24px 24px;display:grid;gap:18px}
   .login .marca{justify-content:center;flex-direction:column;gap:12px}
-  .login .marca svg{width:64px;height:64px;padding:12px;border-radius:20px;background:#fff;box-shadow:0 10px 24px rgba(30,52,42,.12)}
+  .login .marca svg{width:88px;height:88px;padding:16px;border-radius:26px;background:#fff;box-shadow:0 14px 30px rgba(30,52,42,.14)}
   .login .marca span{font-size:44px}
   .login h1{margin:0;text-align:center;font:400 15px/1.5 var(--cuerpo);color:var(--suave)}
   .login h1 b{display:block;font:400 26px/1.15 var(--display);color:var(--texto);margin-bottom:4px}
@@ -216,7 +216,7 @@
 <div class="contenedor">
   <!-- Inicio de sesión -->
   <section class="login vidrio" id="login" aria-labelledby="tituloLogin">
-    <div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div>
+    <div class="marca" role="img" aria-label="Punch"><svg aria-hidden="true"><use href="#logoPunch"/></svg></div>
     <h1 id="tituloLogin"><b>Panel del negocio</b>Sella las visitas de tus clientes</h1>
     <label class="campo" for="email">Email
       <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="tu@negocio.com">
@@ -300,7 +300,6 @@
     <svg class="huella" viewBox="0 0 240 240">
       <defs><path id="circuloHuella" d="M120,120 m-104,0 a104,104 0 1,1 208,0 a104,104 0 1,1 -208,0"/></defs>
       <circle cx="120" cy="120" r="116" fill="none" stroke-width="1.5" stroke-dasharray="3 7"/>
-      <text><textPath href="#circuloHuella">PUNCH · SELLADO · PUNCH · SELLADO ·</textPath></text>
     </svg>
     <svg class="tampon"><use href="#logoPunch"/></svg>
     <div class="saludo"><b id="saludoTitulo">¡Hola!</b><span id="saludoTexto"></span></div>
@@ -332,7 +331,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "11";
+  const VERSION = "12";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
