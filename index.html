@@ -123,6 +123,21 @@
   li.cliente .acciones .btn{padding:9px 12px;font-size:14px;border-radius:12px}
   li.vacio{padding:18px;text-align:center;color:var(--suave);font-size:14px}
 
+  .buscar{display:flex;gap:8px}
+  .buscar input{flex:1;min-width:0;padding:11px 14px;border-radius:12px;border:1px solid var(--filo);background:rgba(255,255,255,.06);color:var(--texto)}
+  .buscar input::placeholder{color:var(--tenue)}
+  li.cliente .nom{cursor:pointer}
+  li.cliente .nom:hover{text-decoration:underline;text-underline-offset:3px}
+
+  /* QR para pasar la tarjeta a otro móvil */
+  .capa{position:fixed;inset:0;z-index:78;display:grid;place-items:center;padding:16px;background:rgba(8,7,20,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .capa .caja{width:min(100%,380px);padding:22px;display:grid;gap:14px;text-align:center}
+  .capa h2{margin:0;font:800 22px/1.2 var(--display)}
+  .capa p{margin:0;color:var(--suave);font-size:14px}
+  .qrcaja{justify-self:center;background:#fff;padding:14px;border-radius:18px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  .qrcaja img,.qrcaja canvas{display:block;width:220px;height:220px;image-rendering:pixelated}
+  .capa .tiempo{font-variant-numeric:tabular-nums;font-weight:600;color:var(--texto)}
+
   /* Aviso flotante */
   .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:60;width:min(92vw,520px);
     padding:13px 16px;border-radius:16px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
@@ -255,16 +270,29 @@
 
     <section class="clientes vidrio" aria-labelledby="tituloClientes">
       <div class="cab">
-        <h3 id="tituloClientes">Últimos clientes</h3>
+        <h3 id="tituloClientes">Clientes</h3>
         <button class="btn icono" id="recargar" title="Actualizar" aria-label="Actualizar lista">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>
         </button>
+      </div>
+      <div class="buscar">
+        <input id="buscar" type="search" placeholder="Buscar por teléfono o nombre" autocomplete="off" inputmode="search">
       </div>
       <ul id="lista"></ul>
     </section>
   </div>
 
   <p class="pie" id="pie">Punch · prueba técnica</p>
+</div>
+
+<div class="capa" id="capaQR" hidden>
+  <div class="caja vidrio" role="dialog" aria-modal="true" aria-labelledby="tituloQR">
+    <h2 id="tituloQR">Pasar a otro móvil</h2>
+    <p id="textoQR"></p>
+    <div class="qrcaja" id="qrcaja"></div>
+    <p>Caduca en <span class="tiempo" id="tiempoQR">15:00</span> · para un solo móvil</p>
+    <button class="btn ancho" id="cerrarQR">Cerrar</button>
+  </div>
 </div>
 
 <div class="toast vidrio" id="estado" role="status" aria-live="polite"></div>
@@ -307,7 +335,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "8";
+  const VERSION = "9";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
@@ -391,16 +419,22 @@
       const negocios = await leer("negocios?select=nombre");
       nombresNegocio = negocios.map((n) => n.nombre).join(" · ");
       $("negocio").textContent = nombresNegocio || "Sin negocio asignado";
-      const tarjetas = await leer("tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)&order=actualizada_en.desc&limit=50");
+      const tarjetas = await leer(`tarjetas?select=serie,nombre_cliente,telefono,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)${filtroBusqueda()}&order=actualizada_en.desc&limit=50`);
       const ul = $("lista"); ul.textContent = "";
-      if (!tarjetas.length) { const li = document.createElement("li"); li.className = "vacio"; li.textContent = "Todavía no hay clientes. Cuando alguien escanee el QR del mostrador, aparecerá aquí."; ul.appendChild(li); }
+      if (!tarjetas.length) {
+        const li = document.createElement("li"); li.className = "vacio";
+        li.textContent = $("buscar").value.trim() ? "No hay ningún cliente con ese teléfono o nombre." : "Todavía no hay clientes. Cuando alguien escanee el QR del mostrador, aparecerá aquí.";
+        ul.appendChild(li);
+      }
       for (const t of tarjetas) {
         const total = t.negocio.visitas_para_premio, completa = t.sellos >= total;
         colores[t.serie] = t.negocio;
         const li = document.createElement("li"); li.className = "cliente";
         const info = document.createElement("div"); info.style.minWidth = "0";
         const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = t.nombre_cliente;
-        const sub = document.createElement("div"); sub.className = "sub"; sub.textContent = `${t.negocio.nombre} · ${t.sellos}/${total}` + (completa ? " · premio listo" : "");
+        nom.title = "Ver ficha"; nom.onclick = () => mostrarFicha(t.serie);
+        const sub = document.createElement("div"); sub.className = "sub";
+        sub.textContent = `${t.negocio.nombre} · ${t.sellos}/${total}` + (t.telefono ? ` · ···${t.telefono.slice(-3)}` : "") + (completa ? " · premio listo" : "");
         info.append(nom, sub);
         const acc = document.createElement("div"); acc.className = "acciones";
         const mk = (txt, accion, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = () => accionar(t.serie, accion); return b; };
@@ -413,6 +447,57 @@
       if (e.message === "sin_sesion") pintar();
     }
   }
+
+  // ── Búsqueda por teléfono o nombre ──
+  function filtroBusqueda() {
+    const v = $("buscar").value.trim();
+    if (!v) return "";
+    const texto = v.replace(/[^\p{L}\p{N} ]/gu, "").trim();
+    const digitos = v.replace(/\D/g, "");
+    const conds = [];
+    if (texto) conds.push(`nombre_cliente.ilike.*${texto}*`);
+    if (digitos.length >= 3) conds.push(`telefono.ilike.*${digitos}*`);
+    return conds.length ? `&or=(${encodeURIComponent(conds.join(","))})` : "";
+  }
+  let busquedaTimer;
+  $("buscar").addEventListener("input", () => { clearTimeout(busquedaTimer); busquedaTimer = setTimeout(pintar, 300); });
+
+  // ── Pasar la tarjeta a otro móvil (QR de un solo uso) ──
+  function cargarQRLib() {
+    if (window.qrcode) return Promise.resolve();
+    return new Promise((ok, ko) => {
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js";
+      s.onload = ok; s.onerror = () => ko(new Error("no se pudo cargar el generador de QR"));
+      document.head.appendChild(s);
+    });
+  }
+  let qrTimer;
+  async function pasarAOtroMovil(serie, nombre) {
+    if (!(await asegurarSesion())) { pintar(); return; }
+    try {
+      const [r] = await Promise.all([
+        fetch(`${SUPABASE_URL}/functions/v1/recuperar`, { method: "POST", headers: { ...cabeceras(), "content-type": "application/json" }, body: JSON.stringify({ serie }) }),
+        cargarQRLib(),
+      ]);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { aviso(MENSAJES[d.error] || "No se pudo generar el código: " + (d.error || r.status), "error"); return; }
+      const qr = qrcode(0, "M"); qr.addData(d.url); qr.make();
+      const caja = $("qrcaja"); caja.innerHTML = qr.createImgTag(6, 0);
+      caja.querySelector("img").alt = "Código QR para recuperar la tarjeta";
+      $("textoQR").textContent = `Que ${nombre} escanee este código con su móvil nuevo. Recuperará su tarjeta con todos sus sellos.`;
+      $("capaQR").hidden = false;
+      const fin = new Date(d.expira_en).getTime();
+      clearInterval(qrTimer);
+      const tic = () => {
+        const s = Math.max(0, Math.round((fin - Date.now()) / 1000));
+        $("tiempoQR").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+        if (!s) { clearInterval(qrTimer); $("qrcaja").innerHTML = "<p style='color:#333;margin:0;padding:40px 10px'>Código caducado</p>"; }
+      };
+      tic(); qrTimer = setInterval(tic, 1000);
+    } catch (e) { aviso("No se pudo generar el código: " + e.message, "error"); }
+  }
+  $("cerrarQR").onclick = () => { clearInterval(qrTimer); $("capaQR").hidden = true; };
 
   // ── Bienvenida con sello ──
   function bienvenida() {
@@ -527,6 +612,7 @@
       const hacer = (accion) => async () => { await accionar(t.serie, accion); f.hidden = true; };
       if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar visita", hacer("sello"), true);
       if (t.sellos > 0) boton("Deshacer último", hacer("anulacion"));
+      boton("Pasar a otro móvil", () => pasarAOtroMovil(t.serie, t.nombre_cliente));
       otra();
     } catch (e) {
       nom.textContent = "No se pudo leer la tarjeta"; det.textContent = MENSAJES[e.message] || e.message; otra();
