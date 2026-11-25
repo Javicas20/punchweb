@@ -774,7 +774,7 @@
         <a class="btn blanco" id="correoContacto" href="#contacto">Escríbenos</a>
         <a class="btn borde" href="panel.html">Ya soy cliente: iniciar sesión</a>
       </div>
-      <p class="correo">o en <mark class="hueco" id="emailContacto">[EMAIL DE CONTACTO]</mark></p>
+      <p class="correo">o en <a id="emailContacto" href="mailto:javier@marwanai.com" style="color:#fff">javier@marwanai.com</a></p>
     </div>
   </section>
 </main>
@@ -803,9 +803,8 @@
 <script src="sitio.js"></script>
 <script>
   // Datos de contacto (se completan al publicar)
-  const CONTACTO = "";
+  const CONTACTO = "javier@marwanai.com";
   if (CONTACTO) {
-    $id("emailContacto").textContent = CONTACTO; $id("emailContacto").classList.remove("hueco");
     $id("correoContacto").href = `mailto:${CONTACTO}?subject=${encodeURIComponent("Quiero OnceMore en mi negocio")}`;
   }
   // Aparición suave al hacer scroll (y entrada de los avisos)
