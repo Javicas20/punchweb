@@ -283,7 +283,7 @@
       <details>
         <summary>¿No funciona la cámara? Escribe el código</summary>
         <div class="fila">
-          <input id="serie" placeholder="Código de la tarjeta" autocomplete="off">
+          <input id="serie" placeholder="Código bajo el QR (p. ej. AB12CD34)" autocomplete="off">
           <button class="btn" data-from-input>Buscar</button>
         </div>
       </details>
@@ -386,7 +386,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "20";
+  const VERSION = "21";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `OnceMore · v${VERSION}`;
@@ -871,7 +871,21 @@
   $("recargar").onclick = pintar;
   $("corte").onclick = () => { $("corte").hidden = true; };
   $("bienvenida").onclick = () => { $("bienvenida").hidden = true; };
-  document.querySelector("[data-from-input]").onclick = () => { const s = serieDeTexto($("serie").value) || $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
+  // Búsqueda manual: enlace o código completo, o el código corto que sale bajo el QR («OnceMore · ABCD1234»)
+  async function buscarCodigo() {
+    const txt = $("serie").value;
+    const s = serieDeTexto(txt);
+    if (s) return mostrarFicha(s);
+    const corto = txt.replace(/oncemore/gi, "").replace(/[^0-9a-f]/gi, "").toLowerCase();
+    if (corto.length < 6) { aviso("Escribe el código que aparece debajo del QR de la tarjeta (8 letras y números).", "error"); return; }
+    try {
+      const r = await leer(`tarjetas?select=serie&serie=like.${corto}*&limit=2`);
+      if (r.length === 1) mostrarFicha(r[0].serie);
+      else aviso(r.length ? "Hay varias tarjetas con ese código: escribe alguna letra más." : "No hay ninguna tarjeta de tu negocio con ese código.", "error");
+    } catch (e) { aviso(MENSAJES[e.message] || "No se pudo buscar: " + e.message, "error"); }
+  }
+  document.querySelector("[data-from-input]").onclick = buscarCodigo;
+  $("serie").addEventListener("keydown", (ev) => { if (ev.key === "Enter") buscarCodigo(); });
   $("btnEscanear").onclick = abrirEscaner;
   $("cerrarEscaner").onclick = cerrarEscaner;
   // ── ¿Has olvidado tu contraseña? ──
