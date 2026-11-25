@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://pifswbumwcuqpvneqtbh.supabase.co; connect-src https://pifswbumwcuqpvneqtbh.supabase.co https://api.pwnedpasswords.com; media-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#eef2ee">
 <meta name="robots" content="noindex">
@@ -187,12 +188,6 @@
       <button class="btn icono" id="salir" title="Salir" aria-label="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button>
     </header>
 
-    <!-- Peticiones de nueva contraseña -->
-    <section class="seccion vidrio" id="peticiones" hidden aria-labelledby="tituloPeticiones">
-      <div><h2 id="tituloPeticiones">Peticiones de nueva contraseña</h2><p class="sub">Genera un enlace y envíaselo por correo. Caduca en 24 horas.</p></div>
-      <ul class="invs" id="listaPeticiones"></ul>
-    </section>
-
     <!-- Negocios -->
     <section class="seccion vidrio" aria-labelledby="tituloNegocios">
       <div class="cab">
@@ -364,7 +359,7 @@
       if (!esAdmin) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").className = "msg error"; $("loginMsg").textContent = ERRORES.no_autorizado; return; }
     } catch (e) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").textContent = textoError(e); return; }
     $("login").hidden = true; $("app").hidden = false;
-    await cargarNegocios(); cargarPeticiones();
+    await cargarNegocios();
   }
 
   async function cargarNegocios() {
@@ -545,7 +540,7 @@
   // ── QR de alta ──
   function cargarQRLib() {
     if (window.qrcode) return Promise.resolve();
-    return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"; s.onload = ok; s.onerror = () => ko(new Error("no se pudo cargar el generador de QR")); document.head.appendChild(s); });
+    return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = "vendor/qrcode-generator-1.4.4.js"; s.onload = ok; s.onerror = () => ko(new Error("no se pudo cargar el generador de QR")); document.head.appendChild(s); });
   }
   const urlAlta = () => `${WEB}alta.html?n=${actual.slug}&c=${actual.codigo_alta}`;
   async function pintarQR() {
@@ -630,34 +625,6 @@
     a.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("Crea tu nueva contraseña de Punch")}&body=${encodeURIComponent(cuerpo)}`;
     if (alHacer) a.addEventListener("click", alHacer);
     acc.append(c, a); caja.append(t, code, acc); cont.appendChild(caja);
-  }
-
-  async function cargarPeticiones() {
-    let lista = [];
-    try { lista = await rpc("admin_solicitudes_contrasena"); } catch { return; }
-    $("peticiones").hidden = !lista.length;
-    const ul = $("listaPeticiones"); ul.textContent = "";
-    const fecha = (d) => new Date(d).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-    for (const p of lista) {
-      const li = document.createElement("li");
-      const info = document.createElement("div"); info.style.minWidth = "0";
-      const mail = document.createElement("div"); mail.className = "mail"; mail.textContent = p.email;
-      const est = document.createElement("div"); est.className = "est";
-      est.textContent = `Pedida el ${fecha(p.creada_en)}` + (p.tiene_cuenta ? "" : " · no hay ninguna cuenta con este email");
-      info.append(mail, est); li.appendChild(info);
-      const acciones = document.createElement("div"); acciones.className = "acciones"; acciones.style.gridColumn = "1/-1";
-      if (p.tiene_cuenta) {
-        const g = document.createElement("button"); g.className = "btn principal"; g.textContent = "Generar enlace";
-        g.onclick = async () => {
-          try { const e = await enlaceRestablecer({ p_email: p.email }); cajaEnlace(acciones, e.email, e.url, () => setTimeout(async () => { await rpc("admin_atender_solicitud", { p_email: p.email }); cargarPeticiones(); }, 1500)); }
-          catch (err) { aviso(textoError(err), "error"); }
-        };
-        acciones.appendChild(g);
-      }
-      const d = document.createElement("button"); d.className = "btn"; d.textContent = p.tiene_cuenta ? "Descartar" : "Quitar de la lista";
-      d.onclick = async () => { try { await rpc("admin_atender_solicitud", { p_email: p.email }); cargarPeticiones(); } catch (err) { aviso(textoError(err), "error"); } };
-      acciones.appendChild(d); li.appendChild(acciones); ul.appendChild(li);
-    }
   }
 
   async function cargarEquipo() {

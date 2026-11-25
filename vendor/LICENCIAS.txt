@@ -1,0 +1,2 @@
+qrcode-generator 1.4.4 · Copyright (c) 2009 Kazuhiko Arase · Licencia MIT (ver cabecera del archivo)
+jsQR 1.4.0 · Licencia Apache 2.0 (ver LICENSE-jsqr.txt)
