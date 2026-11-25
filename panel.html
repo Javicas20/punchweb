@@ -145,6 +145,14 @@
   .tipos button span{font-size:12.5px;color:var(--suave)}
   .tipos button[aria-pressed="true"]{border-color:var(--acento);box-shadow:0 0 0 3px rgba(85,123,107,.16);background:#fff}
 
+  /* Uso del plan */
+  .uso{display:grid;gap:6px;padding:12px 14px;border-radius:14px;border:1px solid var(--linea);background:#fafcfb;font-size:13px;color:var(--suave)}
+  .uso .linea-uso{display:flex;justify-content:space-between;gap:10px}
+  .uso b{color:var(--texto)}
+  .barra-uso{height:6px;border-radius:99px;background:rgba(27,46,39,.1);overflow:hidden}
+  .barra-uso i{display:block;height:100%;background:var(--acento);border-radius:inherit}
+  .uso.casi .barra-uso i{background:var(--aviso)} .uso.lleno .barra-uso i{background:var(--error)}
+  .uso .nota{color:var(--error);font-weight:500}
   /* QR para pasar la tarjeta a otro móvil */
   .capa{position:fixed;inset:0;z-index:78;display:grid;place-items:center;padding:16px;background:rgba(29,42,36,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .capa .caja{width:min(100%,380px);padding:24px;display:grid;gap:14px;text-align:center;background:var(--vidrio-fuerte)}
@@ -294,6 +302,7 @@
     <section class="ajustes vidrio" id="ajustes" hidden aria-labelledby="tituloAjustes">
       <div class="cab"><h3 id="tituloAjustes">Tu programa</h3><button class="btn" id="btnAjustes" aria-expanded="false">Ajustes</button></div>
       <p class="resumen" id="resumenPrograma"></p>
+      <div class="uso" id="usoPlan" hidden></div>
       <form id="formAjustes" hidden novalidate>
         <label class="campo ancho" for="aNegocio" id="filaNegocio" hidden>Negocio<select id="aNegocio"></select></label>
         <div class="campo ancho"><span>Tipo de tarjeta</span>
@@ -378,7 +387,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "17";
+  const VERSION = "18";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · v${VERSION}`;
@@ -575,6 +584,28 @@
     $("resumenPrograma").textContent = misNegocios.length === 1 ? programa(misNegocios[0]) : misNegocios.map((n) => `${n.nombre}: ${programa(n)}`).join(" · ");
     rellenarAjustes();
   }
+  const NOMBRE_PLAN = { gratis: "Gratis", semilla: "Semilla", brote: "Brote", raiz: "Raíz" };
+  async function pintarUso(id) {
+    const c = $("usoPlan");
+    let u;
+    try { [u] = await leer(`rpc/uso_plan?p_negocio=${encodeURIComponent(id)}`); } catch { u = null; }
+    if (!u) { c.hidden = true; return; }
+    const fmt = (x) => Number(x).toLocaleString("es-ES"), pct = u.tarjetas / u.limite_tarjetas;
+    c.textContent = ""; c.hidden = false;
+    c.className = "uso" + (pct >= 1 ? " lleno" : pct >= 0.85 ? " casi" : "");
+    const l = document.createElement("div"); l.className = "linea-uso";
+    const a = document.createElement("span"); const b = document.createElement("b"); b.textContent = `Plan ${NOMBRE_PLAN[u.plan] || u.plan}`; a.append(b);
+    const t = document.createElement("span"); t.textContent = `${fmt(u.tarjetas)} de ${fmt(u.limite_tarjetas)} tarjetas`;
+    l.append(a, t);
+    const barra = document.createElement("span"); barra.className = "barra-uso";
+    const i = document.createElement("i"); i.style.width = `${Math.min(100, Math.max(3, pct * 100))}%`; barra.appendChild(i);
+    c.append(l, barra);
+    if (pct >= 0.85) {
+      const n = document.createElement("span"); n.className = "nota";
+      n.textContent = pct >= 1 ? "Has llegado al máximo: tus clientes no pueden crear tarjetas nuevas. Escríbenos para ampliar el plan." : "Te quedan pocas tarjetas en tu plan. Escríbenos si quieres ampliarlo.";
+      c.appendChild(n);
+    }
+  }
   function elegirTipo(t) {
     tipoElegido = t;
     document.querySelectorAll(".tipos button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tipo === t)));
@@ -585,6 +616,7 @@
     const n = misNegocios.find((x) => x.id === $("aNegocio").value) || misNegocios[0];
     if (!n) return;
     elegirTipo(n.tipo || "premio");
+    pintarUso(n.id);
     $("aPasos").value = n.visitas_para_premio; $("aPremio").value = n.premio || "";
     $("aSingular").value = n.unidad_singular; $("aPlural").value = n.unidad_plural; $("aPrograma").value = n.programa || "";
   }

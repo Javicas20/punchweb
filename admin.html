@@ -133,6 +133,17 @@
   .negocio.activo{border-color:var(--acento);box-shadow:0 0 0 3px rgba(85,123,107,.14)}
   .vacio{padding:18px;text-align:center;color:var(--suave)}
 
+  /* Plan del negocio */
+  .plan-fila{display:grid;gap:10px;padding:14px;border-radius:14px;border:1px solid var(--linea);background:#fafcfb}
+  .plan-fila .fila{display:flex;gap:8px}
+  .plan-fila .fila select{flex:1;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--linea);background:#fff;font-size:15px}
+  .uso{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .uso div{display:grid;gap:5px;font-size:13px;color:var(--suave)}
+  .uso b{color:var(--texto);font-size:14px}
+  .barra-uso{height:6px;border-radius:99px;background:rgba(27,46,39,.1);overflow:hidden}
+  .barra-uso i{display:block;height:100%;background:var(--acento);border-radius:inherit}
+  .barra-uso.lleno i{background:var(--error)}
+  .pill.plan{background:#e3eee8;color:#2c4a3e}
   /* Detalle */
   .pestanas{display:flex;gap:6px;flex-wrap:wrap}
   .pestanas button{border:1px solid var(--linea);background:var(--campo);border-radius:999px;padding:8px 14px;font-weight:500;font-size:14px}
@@ -250,6 +261,7 @@
             <label class="color" for="cAcento"><input id="cAcento" type="color" value="#9fd3b5">Detalles</label>
           </div>
         </div>
+        <label class="campo ancho" for="nPlan">Plan<select id="nPlan"><option value="gratis">Gratis · 6 tarjetas</option><option value="semilla">Semilla · 300 tarjetas</option><option value="brote">Brote · 1.500 tarjetas</option><option value="raiz">Raíz · 5.000 tarjetas</option></select></label>
         <label class="campo" for="nTelefono">Teléfono <small>(opcional)</small><input id="nTelefono" type="tel" maxlength="20"></label>
         <label class="campo" for="nDireccion">Dirección <small>(opcional)</small><input id="nDireccion" maxlength="80"></label>
         <div class="ancho" style="display:grid;gap:8px"><span class="campo">Vista previa</span>
@@ -267,6 +279,10 @@
     <!-- Detalle -->
     <section class="seccion vidrio" id="detalle" hidden aria-labelledby="tituloDetalle">
       <div class="cab"><div><h2 id="tituloDetalle"></h2><p class="sub" id="detalleSub"></p></div></div>
+      <div class="plan-fila">
+        <div class="uso" id="usoPlan"></div>
+        <form class="fila" id="formPlan" novalidate><select id="dPlan" aria-label="Plan del negocio"><option value="gratis">Gratis · 6 tarjetas</option><option value="semilla">Semilla · 300 tarjetas</option><option value="brote">Brote · 1.500 tarjetas</option><option value="raiz">Raíz · 5.000 tarjetas</option></select><button class="btn" type="submit" id="guardarPlan">Cambiar plan</button></form>
+      </div>
       <div class="pestanas" role="tablist">
         <button role="tab" id="tabInvitar" aria-selected="true">Invitar</button>
         <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
@@ -341,6 +357,8 @@
     email_no_valido: "El email no parece correcto.", rol_no_valido: "Elige un rol.", negocio_no_encontrado: "Ese negocio ya no existe.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
     usuario_no_encontrado: "No hay ninguna cuenta con ese email.",
+    limite_equipo: "El equipo ya tiene todas las personas que permite su plan (contando invitaciones pendientes). Sube el plan o anula una invitación.",
+    plan_no_valido: "Elige un plan válido.",
   };
   let avisoT;
   function aviso(t, tipo = "") { const e = $("estado"); e.textContent = t; e.className = `toast vidrio ver ${tipo}`; clearTimeout(avisoT); avisoT = setTimeout(() => e.classList.remove("ver"), tipo === "error" ? 7000 : 4000); }
@@ -368,6 +386,9 @@
     return d;
   }
   const textoError = (e) => ERRORES[e.message] || "No se pudo completar: " + e.message;
+  const NOMBRE_PLAN = { gratis: "Gratis", semilla: "Semilla", brote: "Brote", raiz: "Raíz" };
+  const fmt = (x) => Number(x).toLocaleString("es-ES");
+  const limiteTexto = (usado, limite) => limite == null ? `${fmt(usado)} · sin límite` : `${fmt(usado)} de ${fmt(limite)}`;
 
   // ── Colores ──
   const hexARgb = (h) => { const n = parseInt(h.slice(1), 16); return `rgb(${n >> 16},${(n >> 8) & 255},${n & 255})`; };
@@ -463,7 +484,8 @@
       const info = document.createElement("div"); info.style.minWidth = "0";
       const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = n.nombre;
       const d = document.createElement("div"); d.className = "datos";
-      d.textContent = `${n.tarjetas} ${n.tarjetas == 1 ? "cliente" : "clientes"} · ${n.personal} en el equipo` + (n.invitaciones_pendientes > 0 ? ` · ${n.invitaciones_pendientes} invitación pendiente` : "");
+      const pl = document.createElement("span"); pl.className = "pill plan"; pl.textContent = NOMBRE_PLAN[n.plan] || n.plan;
+      d.append(pl, `${limiteTexto(n.tarjetas, n.limite_tarjetas)} tarjetas · ${limiteTexto(n.personal, n.limite_equipo)} en el equipo` + (n.invitaciones_pendientes > 0 ? ` · ${n.invitaciones_pendientes} invitación pendiente` : ""));
       info.append(nom, d);
       const b = document.createElement("button"); b.className = "btn"; b.textContent = "Gestionar"; b.onclick = () => abrir(n.id);
       el.append(m, info, b); c.appendChild(el);
@@ -535,6 +557,7 @@
         p_color_fondo: hexARgb($("cFondo").value), p_color_texto: hexARgb($("cTexto").value), p_color_etiquetas: hexARgb($("cAcento").value),
         p_telefono: $("nTelefono").value, p_direccion: $("nDireccion").value,
       });
+      if ($("nPlan").value !== "gratis") await rpc("admin_cambiar_plan", { p_negocio: n.id, p_plan: $("nPlan").value });
       m.textContent = ""; $("formNegocio").reset(); elegirTipo("nuevo", "premio"); $("nuevo").hidden = true;
       aviso(`Negocio creado. Ahora invita a su dueño.`, "ok");
       await cargarNegocios(); abrir(n.id);
@@ -586,11 +609,36 @@
     actual = negocios.find((n) => n.id === id); if (!actual) return;
     $("detalle").hidden = false; $("nuevo").hidden = true;
     $("tituloDetalle").textContent = actual.nombre;
-    $("detalleSub").textContent = (actual.tipo === "bono" ? `Bono de ${actual.visitas_para_premio} ${actual.unidad_plural}` : `${actual.premio} cada ${actual.visitas_para_premio} ${actual.unidad_plural}`) + ` · ${actual.tarjetas} clientes · ${actual.personal} en el equipo`;
+    $("detalleSub").textContent = (actual.tipo === "bono" ? `Bono de ${actual.visitas_para_premio} ${actual.unidad_plural}` : `${actual.premio} cada ${actual.visitas_para_premio} ${actual.unidad_plural}`) ;
+    pintarUso();
     $("enlaceInv").hidden = true; $("msgInvitar").textContent = ""; $("iEmail").value = "";
     pestana("tabInvitar"); cargarNegocios();
     $("detalle").scrollIntoView({ behavior: "smooth", block: "start" });
   }
+
+  function pintarUso() {
+    $("dPlan").value = actual.plan;
+    const c = $("usoPlan"); c.textContent = "";
+    for (const [titulo, usado, limite] of [["Tarjetas activas", actual.tarjetas, actual.limite_tarjetas], ["Equipo", actual.personal, actual.limite_equipo]]) {
+      const d = document.createElement("div");
+      const b = document.createElement("b"); b.textContent = `${titulo} · plan ${NOMBRE_PLAN[actual.plan]}`;
+      const t = document.createElement("span"); t.textContent = limiteTexto(usado, limite);
+      const barra = document.createElement("span"); barra.className = "barra-uso" + (limite != null && usado >= limite ? " lleno" : "");
+      const i = document.createElement("i"); i.style.width = limite == null ? "6%" : `${Math.min(100, Math.max(3, (usado / limite) * 100))}%`; barra.appendChild(i);
+      d.append(b, t, barra); c.appendChild(d);
+    }
+  }
+  $("formPlan").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if ($("dPlan").value === actual.plan) return;
+    $("guardarPlan").disabled = true;
+    try {
+      await rpc("admin_cambiar_plan", { p_negocio: actual.id, p_plan: $("dPlan").value });
+      aviso(`Plan cambiado a ${NOMBRE_PLAN[$("dPlan").value]}.`, "ok");
+      const id = actual.id; await cargarNegocios(); abrir(id);
+    } catch (e) { aviso(textoError(e), "error"); $("dPlan").value = actual.plan; }
+    finally { $("guardarPlan").disabled = false; }
+  });
 
   $("formInvitar").addEventListener("submit", async (ev) => {
     ev.preventDefault();

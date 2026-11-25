@@ -228,6 +228,13 @@
     const enlace = document.createElement("a"); enlace.href = "privacidad.html"; enlace.target = "_blank"; enlace.rel = "noopener"; enlace.textContent = "Política de privacidad"; enlace.style.color = "inherit";
     $("textoPrivacidad").appendChild(enlace);
 
+    if (n.completo) {
+      $("form").hidden = true;
+      const aviso = $("enlaceMalo"); aviso.hidden = false;
+      aviso.textContent = `${n.nombre} ha llegado al máximo de tarjetas de su plan. Avisa al personal del local para que lo amplíe.`;
+      return;
+    }
+
     if (esIOS) $("btnApple").hidden = false;
     else if (esAndroid) $("btnGoogle").hidden = false;
     else { $("btnApple").hidden = false; $("btnGoogle").hidden = false; $("avisoEscritorio").hidden = false; }
