@@ -250,6 +250,55 @@
   .pila{margin-top:auto;padding:0 12px;display:grid;flex:none}
   .pila i{display:flex;align-items:flex-start;height:54px;border-radius:13px 13px 0 0;padding:11px 14px;font:700 13px -apple-system,var(--cuerpo);box-shadow:0 -6px 14px rgba(0,0,0,.14)}
   .pila i+i{margin-top:-18px}
+  /* Diseños a medida (ejemplos ficticios) */
+  .disenos{background:#f4f7f5;border-block:1px solid var(--linea);padding-block:88px}
+  .ej-rejilla{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;margin-top:40px}
+  @media (max-width:1100px){.ej-rejilla{grid-template-columns:repeat(2,minmax(0,1fr));max-width:720px;margin-inline:auto}}
+  .ej{position:relative;border-radius:18px;overflow:hidden;box-shadow:0 22px 44px rgba(20,40,30,.16);font-family:-apple-system,var(--cuerpo);transition:transform .25s ease}
+  .ej:hover{transform:translateY(-4px)}
+  .ej-cab{display:flex;align-items:center;gap:10px;padding:14px 16px}
+  .ej-logo{flex:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font:italic 400 20px/1 var(--display)}
+  .ej-nom{flex:1;min-width:0;font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ej-der{text-align:right;display:grid}
+  .ej-k{display:block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;opacity:.85}
+  .ej-v{display:block;font-size:16px;font-weight:600;line-height:1.2}
+  .ej-franja{position:relative;height:118px;display:flex;align-items:flex-end;padding:0 14px 12px;overflow:hidden}
+  .ej-franja > span{position:absolute;inset:0}
+  .ej-sellos{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:7px;width:100%}
+  .ej-sellos i{aspect-ratio:1;border-radius:50%;border:2px dashed currentColor;opacity:.45;display:grid;place-items:center}
+  .ej-sellos i.on{opacity:1;border-style:solid;background:rgba(255,255,255,.14)}
+  .ej-sellos svg{width:56%;height:56%;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+  .ej-campos{display:flex;justify-content:space-between;gap:10px;padding:12px 16px 18px}
+  .ej-sector{position:static;display:block;margin:0 16px 16px;align-self:flex-start;font:600 11px var(--cuerpo);letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+  /* Barbería: grafito con rayas de poste y oro */
+  .ej-barberia{background:#17191c;color:#f1ece2}.ej-barberia .ej-logo{background:#c9a96e;color:#17191c}.ej-barberia .ej-k{color:#c9a96e}
+  .ej-barberia .ej-franja{color:#e2c48d;background:linear-gradient(180deg,#22262b,#121416)}
+  .ej-barberia .ej-rayas{background:repeating-linear-gradient(-45deg,rgba(201,169,110,.12) 0 10px,transparent 10px 26px);-webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent)}
+  /* Cafetería: crema tostada y café */
+  .ej-cafe{background:#f3e7d6;color:#3b2a1e}.ej-cafe .ej-logo{background:#3b2a1e;color:#f3e7d6}.ej-cafe .ej-k{color:#a0643a}
+  .ej-cafe .ej-franja{color:#8a5530;background:radial-gradient(circle at 80% 0%,#e6cfae,transparent 60%),#ecdcc4}
+  .ej-cafe .ej-vapor{background:radial-gradient(ellipse 18px 40px at 18% 30%,rgba(255,255,255,.55),transparent 70%),radial-gradient(ellipse 14px 34px at 26% 20%,rgba(255,255,255,.45),transparent 70%)}
+  .ej-cafe .ej-sellos i.on{background:rgba(160,100,58,.12)}
+  /* Fisioterapia: blanco clínico y verde agua (bono: llenos = las que quedan) */
+  .ej-fisio{background:#ffffff;color:#12343b}.ej-fisio .ej-logo{background:#2aa79b;color:#fff;font-style:normal;font-family:var(--sans-display);font-weight:600;font-size:17px}.ej-fisio .ej-k{color:#2aa79b}
+  .ej-fisio .ej-franja{color:#2aa79b;background:linear-gradient(180deg,#eef8f6,#e2f3f0)}
+  .ej-fisio .ej-ondas{background:repeating-radial-gradient(circle at 100% 0%,transparent 0 18px,rgba(42,167,155,.10) 18px 20px)}
+  .ej-fisio .ej-sellos i{opacity:1;border-style:solid;background:rgba(42,167,155,.16)}
+  .ej-fisio .ej-sellos i.on{opacity:.45;border-style:dashed;background:transparent}
+  .ej-fisio .ej-sellos i.on svg{display:none}
+  /* Uñas: coral y rosa */
+  .ej-unas{background:linear-gradient(160deg,#ff8a7a,#e8577e);color:#fff}.ej-unas .ej-logo{background:#fff;color:#e8577e}.ej-unas .ej-k{color:#ffe1e6}
+  .ej-unas .ej-franja{color:#fff;background:rgba(255,255,255,.1)}
+  .ej-unas .ej-brillos{background:radial-gradient(circle at 15% 30%,rgba(255,255,255,.5) 0 2px,transparent 3px),radial-gradient(circle at 70% 20%,rgba(255,255,255,.6) 0 1.5px,transparent 2.5px),radial-gradient(circle at 88% 55%,rgba(255,255,255,.45) 0 2px,transparent 3px),radial-gradient(circle at 40% 15%,rgba(255,255,255,.4) 0 1px,transparent 2px)}
+  .ej-unas .ej-sellos{grid-template-columns:repeat(4,1fr);max-width:80%;margin-inline:auto}
+  .ej-nota{text-align:center;color:var(--tenue);font-size:13.5px;margin-top:26px}
+  @media (max-width:600px){
+    .disenos{padding-block:48px}
+    .ej-rejilla{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;margin:24px -20px 0;padding:6px 20px 40px;max-width:none;scrollbar-width:none}
+    .ej-rejilla::-webkit-scrollbar{display:none}
+    .ej{flex:0 0 78%;scroll-snap-align:center}
+    .ej-nota{margin-top:-8px}
+  }
   /* Ajustes de espaciado y móvil */
   .tras-banda{padding-top:120px}
   .seguida{padding-top:24px}
@@ -477,6 +526,43 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="disenos" id="disenos">
+    <div class="envoltura">
+      <div class="centro aparece">
+        <span class="eti">Diseños a medida</span>
+        <h2 class="titulo">Cada negocio, su propia tarjeta</h2>
+        <p>Tu logo, tus colores, tu foto y hasta el dibujo del sello. Diseñamos tu tarjeta para que se reconozca a primera vista.</p>
+      </div>
+      <div class="ej-rejilla">
+        <article class="ej ej-barberia aparece">
+          <div class="ej-cab"><span class="ej-logo">N</span><span class="ej-nom">Navaja Norte</span><span class="ej-der"><span class="ej-k">Cortes</span><span class="ej-v">6/10</span></span></div>
+          <div class="ej-franja"><span class="ej-rayas"></span><div class="ej-sellos"><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="ej-campos"><div><span class="ej-k">Te quedan</span><span class="ej-v">4 cortes</span></div><div class="ej-der"><span class="ej-k">Premio</span><span class="ej-v">Corte + barba</span></div></div>
+          <span class="ej-sector">Barbería</span>
+        </article>
+        <article class="ej ej-cafe aparece">
+          <div class="ej-cab"><span class="ej-logo">g</span><span class="ej-nom">Grano &amp; Leche</span><span class="ej-der"><span class="ej-k">Cafés</span><span class="ej-v">8/10</span></span></div>
+          <div class="ej-franja"><span class="ej-vapor"></span><div class="ej-sellos"><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M4 9h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10.5h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5"/></svg></i><i></i><i></i></div></div>
+          <div class="ej-campos"><div><span class="ej-k">Te quedan</span><span class="ej-v">2 cafés</span></div><div class="ej-der"><span class="ej-k">Premio</span><span class="ej-v">Desayuno gratis</span></div></div>
+          <span class="ej-sector">Cafetería</span>
+        </article>
+        <article class="ej ej-fisio aparece">
+          <div class="ej-cab"><span class="ej-logo">E</span><span class="ej-nom">Equilibrio</span><span class="ej-der"><span class="ej-k">Bono</span><span class="ej-v">7 de 10</span></span></div>
+          <div class="ej-franja"><span class="ej-ondas"></span><div class="ej-sellos"><i class="on"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="ej-campos"><div><span class="ej-k">Te quedan</span><span class="ej-v">7 sesiones</span></div><div class="ej-der"><span class="ej-k">Bono de</span><span class="ej-v">10 sesiones</span></div></div>
+          <span class="ej-sector">Fisioterapia</span>
+        </article>
+        <article class="ej ej-unas aparece">
+          <div class="ej-cab"><span class="ej-logo">C</span><span class="ej-nom">Studio Coral</span><span class="ej-der"><span class="ej-k">Visitas</span><span class="ej-v">4/8</span></span></div>
+          <div class="ej-franja"><span class="ej-brillos"></span><div class="ej-sellos"><i class="on"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></i><i class="on"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="ej-campos"><div><span class="ej-k">Te quedan</span><span class="ej-v">4 visitas</span></div><div class="ej-der"><span class="ej-k">Premio</span><span class="ej-v">Manicura gratis</span></div></div>
+          <span class="ej-sector">Uñas y pestañas</span>
+        </article>
+      </div>
+      <p class="ej-nota">Ejemplos de diseño con negocios ficticios.</p>
     </div>
   </section>
 
