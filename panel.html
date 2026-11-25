@@ -57,6 +57,9 @@
   .btn.peligro{color:var(--error);border-color:rgba(181,71,58,.35)}
   .btn.peligro:hover{background:#fbeeec}
   .btn:disabled{opacity:.5;cursor:default;transform:none}
+  .btn.cargando{cursor:progress;opacity:1!important}
+  .giro{width:16px;height:16px;border-radius:50%;border:2.4px solid currentColor;border-right-color:transparent;animation:girar .7s linear infinite;flex:none}
+  @keyframes girar{to{transform:rotate(360deg)}}
   .btn.ancho{width:100%;padding:15px;font-size:16px}
   .btn.icono{padding:9px;border-radius:12px}
 
@@ -383,7 +386,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "19";
+  const VERSION = "20";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `OnceMore · v${VERSION}`;
@@ -500,7 +503,7 @@
         sub.textContent = `${t.negocio.nombre} · ${resumen(t)}` + (t.telefono ? ` · ···${t.telefono.slice(-3)}` : "");
         info.append(nom, sub);
         const acc = document.createElement("div"); acc.className = "acciones";
-        const mk = (txt, accion, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = () => accionar(t.serie, accion); return b; };
+        const mk = (txt, accion, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = () => accionar(t.serie, accion, b); return b; };
         const bono = t.negocio.tipo === "bono";
         acc.append(completa ? mk(bono ? "Renovar" : "Canjear", "canje", true) : mk(bono ? "Usar" : "Sellar", "sello", true));
         const pts = document.createElement("div"); pts.className = "puntos"; puntos(pts, t.sellos, total, t.negocio.color_etiquetas, t.negocio.tipo === "bono");
@@ -774,7 +777,7 @@
       if (bono) $("fichaCuenta").append(String(quedan), Object.assign(document.createElement("small"), { textContent: ` de ${total}` }));
       else $("fichaCuenta").append(String(t.sellos), Object.assign(document.createElement("small"), { textContent: `/${total}` }));
       puntos($("fichaPuntos"), t.sellos, total, t.negocio.color_etiquetas, bono);
-      const hacer = (accion) => async () => { await accionar(t.serie, accion); f.hidden = true; };
+      const hacer = (accion) => async (ev) => { const btn = ev.currentTarget; if (await accionar(t.serie, accion, btn)) f.hidden = true; };
       if (bono) {
         if (t.sellos >= total) boton("Renovar bono", hacer("canje"), true); else boton(`Usar ${t.negocio.unidad_singular}`, hacer("sello"), true);
         if (t.sellos > 0 && t.sellos < total) boton("Renovar bono", hacer("canje"));
@@ -806,8 +809,24 @@
     } catch (e) { aviso("Sin conexión: " + e.message, "error"); }
   }
 
-  async function accionar(serie, accion) {
-    if (!(await asegurarSesion())) { pintar(); return; }
+  // Botón en espera: círculo girando y el resto de botones de la tarjeta bloqueados (evita dobles sellos)
+  const ocupadas = new Set();
+  function enEspera(boton, accion) {
+    if (!boton) return () => {};
+    const grupo = [...(boton.parentElement?.querySelectorAll("button") ?? [boton])];
+    const antes = boton.innerHTML, ancho = boton.offsetWidth;
+    grupo.forEach((b) => (b.disabled = true));
+    boton.style.minWidth = ancho + "px"; boton.classList.add("cargando"); boton.setAttribute("aria-busy", "true");
+    const txt = accion === "canje" ? "Canjeando…" : accion === "anulacion" ? "Deshaciendo…" : "Sellando…";
+    boton.innerHTML = `<span class="giro" aria-hidden="true"></span>${txt}`;
+    return () => { grupo.forEach((b) => (b.disabled = false)); boton.innerHTML = antes; boton.classList.remove("cargando"); boton.removeAttribute("aria-busy"); boton.style.minWidth = ""; };
+  }
+
+  async function accionar(serie, accion, boton) {
+    if (ocupadas.has(serie)) return false;
+    if (!(await asegurarSesion())) { pintar(); return false; }
+    ocupadas.add(serie);
+    const listo = enEspera(boton, accion);
     let data;
     try {
       const r = await fetch(`${SUPABASE_URL}/functions/v1/sellar`, {
@@ -815,8 +834,9 @@
         body: JSON.stringify({ serie, accion }),
       });
       data = await r.json().catch(() => ({}));
-      if (!r.ok) { aviso(MENSAJES[data.error] || "No se pudo completar: " + (data.error || data.message || r.status), "error"); return; }
-    } catch (err) { aviso("Sin conexión con el servidor: " + err.message, "error"); return; }
+      if (!r.ok) { aviso(MENSAJES[data.error] || "No se pudo completar: " + (data.error || data.message || r.status), "error"); return false; }
+    } catch (err) { aviso("Sin conexión con el servidor: " + err.message, "error"); return false; }
+    finally { ocupadas.delete(serie); listo(); }
 
     const av = data.avisos, g = data.google;
     const partes = [];
@@ -831,6 +851,7 @@
     aviso(`${data.cliente}: ${que}. ${partes.join(" ")}`, fallo ? "error" : "ok");
     if (accion === "sello") animarCorte(serie, data);
     pintar();
+    return true;
   }
 
   $("entrar").onclick = async () => {
