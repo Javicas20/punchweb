@@ -97,6 +97,10 @@
   .estilo{display:flex;align-items:center;gap:6px;padding:6px 10px 6px 6px;border-radius:999px;border:1px solid var(--linea);background:var(--campo);font-size:13px;cursor:pointer}
   .estilo i{width:18px;height:18px;border-radius:50%;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
 
+  .tipos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tipos button{display:grid;gap:2px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);color:var(--texto)}
+  .tipos button b{font-size:15px} .tipos button span{font-size:12.5px;color:var(--suave)}
+  .tipos button[aria-pressed="true"]{border-color:var(--acento);box-shadow:0 0 0 3px rgba(85,123,107,.16);background:#fff}
   .previa{border-radius:18px;overflow:hidden;box-shadow:0 18px 40px rgba(30,52,42,.18);max-width:340px;justify-self:center;width:100%}
   .previa .t{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;gap:10px}
   .previa .t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -187,11 +191,17 @@
       <div class="cab"><h2 id="tituloNuevo">Nuevo negocio</h2><button class="btn" id="cancelarNuevo">Cancelar</button></div>
       <form id="formNegocio" class="rejilla" novalidate>
         <label class="campo ancho" for="nNombre">Nombre del negocio<input id="nNombre" maxlength="40" placeholder="Por ejemplo, Barbería Sur" required></label>
-        <label class="campo" for="nPremio">Premio<input id="nPremio" maxlength="40" placeholder="Corte gratis" required></label>
-        <label class="campo" for="nVisitas">Visitas para el premio<select id="nVisitas"></select></label>
-        <label class="campo" for="nSingular">Cada visita se llama<input id="nSingular" maxlength="20" placeholder="corte" value="visita"></label>
+        <div class="campo ancho"><span>Tipo de tarjeta</span>
+          <div class="tipos" role="group" aria-label="Tipo de tarjeta" data-grupo="nuevo">
+            <button type="button" data-tipo="premio" aria-pressed="true"><b>Tarjeta de premio</b><span>Cada visita suma; al completarla hay premio</span></button>
+            <button type="button" data-tipo="bono" aria-pressed="false"><b>Bono de sesiones</b><span>Cada visita gasta una sesión; sin premio</span></button>
+          </div>
+        </div>
+        <label class="campo" for="nVisitas"><span id="nVisitasTexto">Visitas para el premio</span><input id="nVisitas" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
+        <label class="campo" for="nPremio" id="filaNPremio">Premio<input id="nPremio" maxlength="40" placeholder="Corte gratis" required></label>
+        <label class="campo" for="nSingular">Cada paso se llama<input id="nSingular" maxlength="20" placeholder="visita, sesión, corte…" value="visita"></label>
         <label class="campo" for="nPlural">En plural<input id="nPlural" maxlength="20" placeholder="cortes" value="visitas"></label>
-        <label class="campo ancho" for="nPrograma">Nombre del programa <small>(opcional; si no, «Club + nombre»)</small><input id="nPrograma" maxlength="60" placeholder="Club Barbería Sur"></label>
+        <label class="campo ancho" for="nPrograma">Nombre del programa <small>(opcional; si no, «Club» o «Bono» + nombre)</small><input id="nPrograma" maxlength="60"></label>
         <div class="campo ancho"><span>Estilo de la tarjeta</span>
           <div class="estilos" id="estilos"></div>
           <div class="colores">
@@ -221,6 +231,7 @@
         <button role="tab" id="tabInvitar" aria-selected="true">Invitar</button>
         <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
         <button role="tab" id="tabInvs" aria-selected="false">Invitaciones</button>
+        <button role="tab" id="tabProg" aria-selected="false">Programa</button>
       </div>
 
       <div id="panInvitar" style="display:grid;gap:12px">
@@ -249,6 +260,22 @@
       </div>
 
       <div id="panInvs" hidden><ul class="invs" id="listaInvs"></ul></div>
+
+      <form id="panProg" hidden class="rejilla" novalidate>
+        <div class="campo ancho"><span>Tipo de tarjeta</span>
+          <div class="tipos" role="group" aria-label="Tipo de tarjeta" data-grupo="prog">
+            <button type="button" data-tipo="premio" aria-pressed="true"><b>Tarjeta de premio</b><span>Cada visita suma; al completarla hay premio</span></button>
+            <button type="button" data-tipo="bono" aria-pressed="false"><b>Bono de sesiones</b><span>Cada visita gasta una sesión; sin premio</span></button>
+          </div>
+        </div>
+        <label class="campo" for="gPasos"><span id="gPasosTexto">Visitas para el premio</span><input id="gPasos" type="number" min="1" max="50" inputmode="numeric"></label>
+        <label class="campo" for="gPremio" id="filaGPremio">Premio<input id="gPremio" maxlength="40"></label>
+        <label class="campo" for="gSingular">Cada paso se llama<input id="gSingular" maxlength="20"></label>
+        <label class="campo" for="gPlural">En plural<input id="gPlural" maxlength="20"></label>
+        <label class="campo ancho" for="gPrograma">Nombre del programa<input id="gPrograma" maxlength="60"></label>
+        <button class="btn principal ancho" type="submit" id="guardarProg" style="grid-column:1/-1">Guardar y actualizar las tarjetas</button>
+        <p class="msg" id="msgProg" role="status" style="grid-column:1/-1"></p>
+      </form>
     </section>
   </div>
   <p class="pie" id="pie">Punch · administración</p>
@@ -264,7 +291,7 @@
   const ERRORES = {
     no_autorizado: "Esta cuenta no tiene permisos de administración.",
     falta_nombre: "Escribe el nombre del negocio.", falta_premio: "Escribe el premio.",
-    visitas_no_validas: "Las visitas deben estar entre 3 y 12.", color_no_valido: "Algún color no es válido.",
+    visitas_no_validas: "El número de pasos debe estar entre 1 y 50.", tipo_no_valido: "Elige el tipo de tarjeta.", color_no_valido: "Algún color no es válido.",
     email_no_valido: "El email no parece correcto.", rol_no_valido: "Elige un rol.", negocio_no_encontrado: "Ese negocio ya no existe.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
   };
@@ -334,8 +361,23 @@
     }
   }
 
+  // ── Tipo de tarjeta (premio o bono) ──
+  const tipos = { nuevo: "premio", prog: "premio" };
+  function elegirTipo(grupo, t, sugerir) {
+    const antes = tipos[grupo]; tipos[grupo] = t;
+    document.querySelectorAll(`.tipos[data-grupo="${grupo}"] button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tipo === t)));
+    const [fila, texto, s, p] = grupo === "nuevo" ? ["filaNPremio", "nVisitasTexto", "nSingular", "nPlural"] : ["filaGPremio", "gPasosTexto", "gSingular", "gPlural"];
+    $(fila).hidden = t === "bono";
+    $(texto).textContent = t === "bono" ? "Sesiones del bono" : "Visitas para el premio";
+    if (sugerir && antes !== t) {
+      if (t === "bono" && ($(s).value === "visita" || !$(s).value)) { $(s).value = "sesión"; $(p).value = "sesiones"; }
+      if (t === "premio" && ($(s).value === "sesión" || !$(s).value)) { $(s).value = "visita"; $(p).value = "visitas"; }
+    }
+    if (grupo === "nuevo") previa();
+  }
+  document.querySelectorAll(".tipos button").forEach((b) => b.addEventListener("click", () => elegirTipo(b.closest(".tipos").dataset.grupo, b.dataset.tipo, true)));
+
   // ── Nuevo negocio ──
-  for (let v = 3; v <= 12; v++) { const o = document.createElement("option"); o.value = v; o.textContent = v; if (v === 10) o.selected = true; $("nVisitas").appendChild(o); }
   for (const [nombre, f, t, a] of ESTILOS) {
     const b = document.createElement("button"); b.type = "button"; b.className = "estilo";
     const i = document.createElement("i"); i.style.background = `linear-gradient(135deg,${f} 55%,${a} 55%)`;
@@ -343,17 +385,28 @@
     $("estilos").appendChild(b);
   }
   function previa() {
-    const f = $("cFondo").value, t = $("cTexto").value, a = $("cAcento").value, total = +$("nVisitas").value;
+    const f = $("cFondo").value, t = $("cTexto").value, a = $("cAcento").value, total = Math.max(1, Math.min(50, +$("nVisitas").value || 1));
+    const bono = tipos.nuevo === "bono", usados = Math.min(3, total);
     const p = $("previa"); p.style.background = f; p.style.color = t;
     ["pK1", "pK2", "pK3"].forEach((id) => ($(id).style.color = a));
     $("pNombre").textContent = $("nNombre").value.trim() || "Tu negocio";
-    $("pCuenta").textContent = `3/${total}`;
-    const quedan = total - 3, plural = $("nPlural").value.trim() || "visitas", singular = $("nSingular").value.trim() || "visita";
-    $("pQuedan").textContent = `${quedan} ${quedan === 1 ? singular : plural}`;
-    $("pPremio").textContent = $("nPremio").value.trim() || "Premio";
+    $("pK1").textContent = bono ? "Usadas" : "Sellos";
+    $("pCuenta").textContent = `${usados}/${total}`;
+    const quedan = total - usados, plural = $("nPlural").value.trim() || (bono ? "sesiones" : "visitas"), singular = $("nSingular").value.trim() || (bono ? "sesión" : "visita");
+    $("pQuedan").textContent = quedan ? `${quedan} ${quedan === 1 ? singular : plural}` : bono ? "Bono terminado" : "¡Premio listo!";
+    $("pK3").textContent = bono ? "Bono" : "Premio";
+    $("pPremio").textContent = bono ? `${total} ${plural}` : $("nPremio").value.trim() || "Premio";
     const tinta = claro(f) ? "rgb(30,34,32)" : "rgb(255,255,255)";
-    const s = $("pSellos"); s.textContent = ""; s.style.gridTemplateColumns = `repeat(${Math.min(6, Math.ceil((total + 1) / 2))},1fr)`;
-    for (let i = 0; i <= total; i++) { const d = document.createElement("i"); d.style.borderColor = tinta; if (i < 3) { d.className = "on"; d.style.background = tinta.replace("rgb", "rgba").replace(")", ",.16)"); } s.appendChild(d); }
+    const s = $("pSellos"); s.textContent = "";
+    const n = bono ? total : total + 1, cols = n <= 6 ? n : n <= 14 ? Math.ceil(n / 2) : n <= 20 ? Math.ceil(n / 3) : n;
+    s.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement("i"); d.style.borderColor = tinta;
+      if (n > 20) { d.style.width = "100%"; d.style.height = "16px"; d.style.borderRadius = "3px"; }
+      const lleno = bono ? i >= usados : i < usados && i < total;
+      if (lleno) { d.className = "on"; d.style.borderColor = a; d.style.background = a + "38"; }
+      s.appendChild(d);
+    }
   }
   ["nNombre", "nPremio", "nVisitas", "nSingular", "nPlural", "cFondo", "cTexto", "cAcento"].forEach((id) => $(id).addEventListener("input", previa));
   $("btnNuevo").onclick = () => { $("nuevo").hidden = false; $("detalle").hidden = true; previa(); $("nuevo").scrollIntoView({ behavior: "smooth" }); $("nNombre").focus(); };
@@ -362,16 +415,18 @@
     ev.preventDefault();
     const m = $("msgNuevo"); m.className = "msg";
     if (!$("nNombre").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_nombre; return; }
-    if (!$("nPremio").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_premio; return; }
+    if (tipos.nuevo === "premio" && !$("nPremio").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_premio; return; }
+    const pasosN = Number($("nVisitas").value);
+    if (!Number.isInteger(pasosN) || pasosN < 1 || pasosN > 50) { m.className = "msg error"; m.textContent = ERRORES.visitas_no_validas; return; }
     $("crear").disabled = true; m.textContent = "Creando…";
     try {
       const [n] = await rpc("admin_crear_negocio", {
-        p_nombre: $("nNombre").value, p_programa: $("nPrograma").value, p_premio: $("nPremio").value, p_visitas: +$("nVisitas").value,
+        p_nombre: $("nNombre").value, p_tipo: tipos.nuevo, p_programa: $("nPrograma").value, p_premio: $("nPremio").value, p_visitas: pasosN,
         p_unidad_singular: $("nSingular").value, p_unidad_plural: $("nPlural").value,
         p_color_fondo: hexARgb($("cFondo").value), p_color_texto: hexARgb($("cTexto").value), p_color_etiquetas: hexARgb($("cAcento").value),
         p_telefono: $("nTelefono").value, p_direccion: $("nDireccion").value,
       });
-      m.textContent = ""; $("formNegocio").reset(); $("nuevo").hidden = true;
+      m.textContent = ""; $("formNegocio").reset(); elegirTipo("nuevo", "premio"); $("nuevo").hidden = true;
       aviso(`Negocio creado. Ahora invita a su dueño.`, "ok");
       await cargarNegocios(); abrir(n.id);
     } catch (e) { m.className = "msg error"; m.textContent = textoError(e); }
@@ -380,21 +435,47 @@
 
   // ── Detalle de un negocio ──
   function pestana(cual) {
-    for (const [tab, pan] of [["tabInvitar", "panInvitar"], ["tabQR", "panQR"], ["tabInvs", "panInvs"]]) {
+    for (const [tab, pan] of [["tabInvitar", "panInvitar"], ["tabQR", "panQR"], ["tabInvs", "panInvs"], ["tabProg", "panProg"]]) {
       $(tab).setAttribute("aria-selected", String(tab === cual)); $(pan).hidden = tab !== cual;
     }
     if (cual === "tabQR") pintarQR();
     if (cual === "tabInvs") cargarInvitaciones();
+    if (cual === "tabProg") {
+      elegirTipo("prog", actual.tipo || "premio");
+      $("gPasos").value = actual.visitas_para_premio; $("gPremio").value = actual.premio || "";
+      $("gSingular").value = actual.unidad_singular; $("gPlural").value = actual.unidad_plural; $("gPrograma").value = actual.programa || ""; $("msgProg").textContent = "";
+    }
   }
+  $("panProg").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const m = $("msgProg"); m.className = "msg";
+    const pasos = Number($("gPasos").value);
+    if (!Number.isInteger(pasos) || pasos < 1 || pasos > 50) { m.className = "msg error"; m.textContent = ERRORES.visitas_no_validas; return; }
+    if (tipos.prog === "premio" && !$("gPremio").value.trim()) { m.className = "msg error"; m.textContent = ERRORES.falta_premio; return; }
+    if (!(await asegurarSesion())) { pintar(); return; }
+    $("guardarProg").disabled = true; m.textContent = "Guardando y actualizando las tarjetas…";
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/ajustes`, {
+        method: "POST", headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}`, "content-type": "application/json" },
+        body: JSON.stringify({ negocio_id: actual.id, tipo: tipos.prog, visitas: pasos, premio: $("gPremio").value, unidad_singular: $("gSingular").value, unidad_plural: $("gPlural").value, programa: $("gPrograma").value }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { m.className = "msg error"; m.textContent = ERRORES[d.error] || "No se pudo guardar: " + (d.error || r.status); return; }
+      m.textContent = ""; aviso(`Guardado. ${d.tarjetas} ${d.tarjetas === 1 ? "tarjeta actualizada" : "tarjetas actualizadas"}.`, "ok");
+      const id = actual.id; await cargarNegocios(); abrir(id); pestana("tabProg");
+    } catch (e) { m.className = "msg error"; m.textContent = "Sin conexión: " + e.message; }
+    finally { $("guardarProg").disabled = false; }
+  });
   $("tabInvitar").onclick = () => pestana("tabInvitar");
   $("tabQR").onclick = () => pestana("tabQR");
   $("tabInvs").onclick = () => pestana("tabInvs");
+  $("tabProg").onclick = () => pestana("tabProg");
 
   function abrir(id) {
     actual = negocios.find((n) => n.id === id); if (!actual) return;
     $("detalle").hidden = false; $("nuevo").hidden = true;
     $("tituloDetalle").textContent = actual.nombre;
-    $("detalleSub").textContent = `${actual.premio} cada ${actual.visitas_para_premio} visitas · ${actual.tarjetas} clientes · ${actual.personal} en el equipo`;
+    $("detalleSub").textContent = (actual.tipo === "bono" ? `Bono de ${actual.visitas_para_premio} ${actual.unidad_plural}` : `${actual.premio} cada ${actual.visitas_para_premio} ${actual.unidad_plural}`) + ` · ${actual.tarjetas} clientes · ${actual.personal} en el equipo`;
     $("enlaceInv").hidden = true; $("msgInvitar").textContent = ""; $("iEmail").value = "";
     pestana("tabInvitar"); cargarNegocios();
     $("detalle").scrollIntoView({ behavior: "smooth", block: "start" });

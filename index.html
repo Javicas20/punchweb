@@ -127,6 +127,21 @@
   li.cliente .acciones .btn{padding:9px 13px;font-size:14px;border-radius:12px}
   li.vacio{padding:18px;text-align:center;color:var(--suave);font-size:14px}
 
+  /* Ajustes del programa (solo dueños) */
+  .ajustes{padding:18px;display:grid;gap:14px}
+  .ajustes .cab{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .ajustes h3{margin:0;font:400 24px/1 var(--display)}
+  .ajustes .resumen{margin:-6px 0 0;color:var(--suave);font-size:14px}
+  .ajustes form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+  @media (max-width:480px){.ajustes form{grid-template-columns:minmax(0,1fr)}}
+  .ajustes .ancho{grid-column:1/-1}
+  .ajustes select{width:100%;padding:13px 14px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto)}
+  .tipos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tipos button{display:grid;gap:2px;text-align:left;padding:12px 14px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);color:var(--texto)}
+  .tipos button b{font-size:15px}
+  .tipos button span{font-size:12.5px;color:var(--suave)}
+  .tipos button[aria-pressed="true"]{border-color:var(--acento);box-shadow:0 0 0 3px rgba(85,123,107,.16);background:#fff}
+
   /* QR para pasar la tarjeta a otro móvil */
   .capa{position:fixed;inset:0;z-index:78;display:grid;place-items:center;padding:16px;background:rgba(29,42,36,.28);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
   .capa .caja{width:min(100%,380px);padding:24px;display:grid;gap:14px;text-align:center;background:var(--vidrio-fuerte)}
@@ -265,6 +280,27 @@
       <div class="btns" id="fichaBotones"></div>
     </section>
 
+    <section class="ajustes vidrio" id="ajustes" hidden aria-labelledby="tituloAjustes">
+      <div class="cab"><h3 id="tituloAjustes">Tu programa</h3><button class="btn" id="btnAjustes" aria-expanded="false">Ajustes</button></div>
+      <p class="resumen" id="resumenPrograma"></p>
+      <form id="formAjustes" hidden novalidate>
+        <label class="campo ancho" for="aNegocio" id="filaNegocio" hidden>Negocio<select id="aNegocio"></select></label>
+        <div class="campo ancho"><span>Tipo de tarjeta</span>
+          <div class="tipos" role="group" aria-label="Tipo de tarjeta">
+            <button type="button" data-tipo="premio" aria-pressed="true"><b>Tarjeta de premio</b><span>Cada visita suma; al completarla hay premio</span></button>
+            <button type="button" data-tipo="bono" aria-pressed="false"><b>Bono de sesiones</b><span>Cada visita gasta una sesión; sin premio</span></button>
+          </div>
+        </div>
+        <label class="campo" for="aPasos"><span id="aPasosTexto">Visitas para el premio</span><input id="aPasos" type="number" min="1" max="50" inputmode="numeric"></label>
+        <label class="campo" for="aPremio" id="filaPremio">Premio<input id="aPremio" maxlength="40" placeholder="Corte gratis"></label>
+        <label class="campo" for="aSingular">Cada paso se llama<input id="aSingular" maxlength="20" placeholder="visita, sesión, corte…"></label>
+        <label class="campo" for="aPlural">En plural<input id="aPlural" maxlength="20" placeholder="visitas, sesiones, cortes…"></label>
+        <label class="campo ancho" for="aPrograma">Nombre del programa<input id="aPrograma" maxlength="60"></label>
+        <button class="btn principal ancho" type="submit" id="guardarAjustes">Guardar y actualizar las tarjetas</button>
+        <p class="msg ancho" id="msgAjustes" role="status"></p>
+      </form>
+    </section>
+
     <section class="clientes vidrio" aria-labelledby="tituloClientes">
       <div class="cab">
         <h3 id="tituloClientes">Clientes</h3>
@@ -331,7 +367,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "12";
+  const VERSION = "13";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
@@ -344,6 +380,11 @@
     premio_no_disponible: "Aún no tiene todos los sellos.",
     sin_sellos: "No hay sellos que anular.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
+    bono_terminado: "El bono está terminado. Renuévalo para seguir usándolo.",
+    bono_sin_usar: "El bono todavía no se ha usado: no hace falta renovarlo.",
+    no_autorizado: "Solo el dueño del negocio puede cambiar los ajustes.",
+    visitas_no_validas: "El número de pasos debe estar entre 1 y 50.",
+    falta_premio: "Escribe el premio.",
   };
 
   // ── Aviso flotante ──
@@ -402,9 +443,16 @@
   // ── Pantalla ──
   const colores = {};
   let nombresNegocio = "";
-  function puntos(cont, sellos, total, color) {
-    cont.textContent = ""; cont.style.setProperty("--c", color || "#7c5cff");
-    for (let i = 0; i < total; i++) { const p = document.createElement("i"); if (i < sellos) p.className = "on"; cont.appendChild(p); }
+  function puntos(cont, sellos, total, color, bono) {
+    cont.textContent = ""; cont.style.setProperty("--c", color || "#557b6b");
+    for (let i = 0; i < total; i++) { const p = document.createElement("i"); if (bono ? i >= sellos : i < sellos) p.className = "on"; cont.appendChild(p); }
+  }
+  const unidad = (n, q) => (q === 1 ? n.unidad_singular : n.unidad_plural);
+  // Resumen de una tarjeta según el tipo de programa
+  function resumen(t) {
+    const n = t.negocio, total = n.visitas_para_premio, quedan = Math.max(0, total - t.sellos);
+    if (n.tipo === "bono") return quedan === 0 ? "bono terminado" : `le quedan ${quedan} ${unidad(n, quedan)} de ${total}`;
+    return t.sellos >= total ? "premio listo" : `${t.sellos}/${total} · le quedan ${quedan}`;
   }
 
   async function pintar() {
@@ -412,10 +460,11 @@
     $("login").hidden = !!sesion; $("app").hidden = !sesion;
     if (!sesion) return;
     try {
+      if (!misNegocios.length) cargarAjustes();
       const negocios = await leer("negocios?select=nombre");
       nombresNegocio = negocios.map((n) => n.nombre).join(" · ");
       $("negocio").textContent = nombresNegocio || "Sin negocio asignado";
-      const tarjetas = await leer(`tarjetas?select=serie,nombre_cliente,telefono,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)${filtroBusqueda()}&order=actualizada_en.desc&limit=50`);
+      const tarjetas = await leer(`tarjetas?select=serie,nombre_cliente,telefono,sellos,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)${filtroBusqueda()}&order=actualizada_en.desc&limit=50`);
       const ul = $("lista"); ul.textContent = "";
       if (!tarjetas.length) {
         const li = document.createElement("li"); li.className = "vacio";
@@ -430,12 +479,13 @@
         const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = t.nombre_cliente;
         nom.title = "Ver ficha"; nom.onclick = () => mostrarFicha(t.serie);
         const sub = document.createElement("div"); sub.className = "sub";
-        sub.textContent = `${t.negocio.nombre} · ${t.sellos}/${total}` + (t.telefono ? ` · ···${t.telefono.slice(-3)}` : "") + (completa ? " · premio listo" : "");
+        sub.textContent = `${t.negocio.nombre} · ${resumen(t)}` + (t.telefono ? ` · ···${t.telefono.slice(-3)}` : "");
         info.append(nom, sub);
         const acc = document.createElement("div"); acc.className = "acciones";
         const mk = (txt, accion, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = () => accionar(t.serie, accion); return b; };
-        acc.append(completa ? mk("Canjear", "canje", true) : mk("Sellar", "sello", true));
-        const pts = document.createElement("div"); pts.className = "puntos"; puntos(pts, t.sellos, total, t.negocio.color_etiquetas);
+        const bono = t.negocio.tipo === "bono";
+        acc.append(completa ? mk(bono ? "Renovar" : "Canjear", "canje", true) : mk(bono ? "Usar" : "Sellar", "sello", true));
+        const pts = document.createElement("div"); pts.className = "puntos"; puntos(pts, t.sellos, total, t.negocio.color_etiquetas, t.negocio.tipo === "bono");
         li.append(info, acc, pts); ul.appendChild(li);
       }
     } catch (e) {
@@ -495,6 +545,77 @@
   }
   $("cerrarQR").onclick = () => { clearInterval(qrTimer); $("capaQR").hidden = true; };
 
+  // ── Ajustes del programa (solo dueños) ──
+  let misNegocios = [], tipoElegido = "premio";
+  const programa = (n) => n.tipo === "bono"
+    ? `Bono de ${n.visitas_para_premio} ${n.unidad_plural}: cada visita descuenta una.`
+    : `Tarjeta de premio: ${n.premio} al llegar a ${n.visitas_para_premio} ${n.unidad_plural}.`;
+  async function cargarAjustes() {
+    try {
+      const filas = await leer("miembros?select=rol,negocio:negocios(id,nombre,tipo,premio,visitas_para_premio,unidad_singular,unidad_plural,programa)&rol=eq.dueno");
+      misNegocios = filas.map((f) => f.negocio).filter(Boolean);
+    } catch { misNegocios = []; }
+    $("ajustes").hidden = !misNegocios.length;
+    if (!misNegocios.length) return;
+    const sel = $("aNegocio"), previo = sel.value; sel.textContent = "";
+    for (const n of misNegocios) { const o = document.createElement("option"); o.value = n.id; o.textContent = n.nombre; sel.appendChild(o); }
+    if (previo && misNegocios.some((n) => n.id === previo)) sel.value = previo;
+    $("filaNegocio").hidden = misNegocios.length < 2;
+    $("resumenPrograma").textContent = misNegocios.length === 1 ? programa(misNegocios[0]) : misNegocios.map((n) => `${n.nombre}: ${programa(n)}`).join(" · ");
+    rellenarAjustes();
+  }
+  function elegirTipo(t) {
+    tipoElegido = t;
+    document.querySelectorAll(".tipos button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tipo === t)));
+    $("filaPremio").hidden = t === "bono";
+    $("aPasosTexto").textContent = t === "bono" ? "Sesiones del bono" : "Visitas para el premio";
+  }
+  function rellenarAjustes() {
+    const n = misNegocios.find((x) => x.id === $("aNegocio").value) || misNegocios[0];
+    if (!n) return;
+    elegirTipo(n.tipo || "premio");
+    $("aPasos").value = n.visitas_para_premio; $("aPremio").value = n.premio || "";
+    $("aSingular").value = n.unidad_singular; $("aPlural").value = n.unidad_plural; $("aPrograma").value = n.programa || "";
+  }
+  document.querySelectorAll(".tipos button").forEach((b) => b.addEventListener("click", () => {
+    const antes = tipoElegido; elegirTipo(b.dataset.tipo);
+    // Sugerir nombres de paso al cambiar de tipo, si no se habían personalizado
+    if (antes !== tipoElegido) {
+      const s = $("aSingular"), p = $("aPlural");
+      if (tipoElegido === "bono" && (s.value === "visita" || !s.value)) { s.value = "sesión"; p.value = "sesiones"; }
+      if (tipoElegido === "premio" && (s.value === "sesión" || !s.value)) { s.value = "visita"; p.value = "visitas"; }
+    }
+  }));
+  $("aNegocio").addEventListener("change", rellenarAjustes);
+  $("btnAjustes").onclick = () => {
+    const f = $("formAjustes"), abrir = f.hidden; f.hidden = !abrir;
+    $("btnAjustes").setAttribute("aria-expanded", String(abrir)); $("btnAjustes").textContent = abrir ? "Cerrar" : "Ajustes";
+    if (abrir) rellenarAjustes();
+  };
+  $("formAjustes").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const m = $("msgAjustes"); m.className = "msg ancho";
+    const pasos = Number($("aPasos").value);
+    if (!Number.isInteger(pasos) || pasos < 1 || pasos > 50) { m.className = "msg ancho error"; m.textContent = MENSAJES.visitas_no_validas; return; }
+    if (tipoElegido === "premio" && !$("aPremio").value.trim()) { m.className = "msg ancho error"; m.textContent = MENSAJES.falta_premio; return; }
+    if (!(await asegurarSesion())) { pintar(); return; }
+    $("guardarAjustes").disabled = true; m.textContent = "Guardando y actualizando las tarjetas…";
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/ajustes`, {
+        method: "POST", headers: { ...cabeceras(), "content-type": "application/json" },
+        body: JSON.stringify({ negocio_id: $("aNegocio").value, tipo: tipoElegido, visitas: pasos, premio: $("aPremio").value,
+          unidad_singular: $("aSingular").value, unidad_plural: $("aPlural").value, programa: $("aPrograma").value }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { m.className = "msg ancho error"; m.textContent = MENSAJES[d.error] || "No se pudo guardar: " + (d.error || r.status); return; }
+      m.textContent = "";
+      aviso(`Guardado. ${d.tarjetas} ${d.tarjetas === 1 ? "tarjeta actualizada" : "tarjetas actualizadas"} en los móviles de tus clientes.`, "ok");
+      $("formAjustes").hidden = true; $("btnAjustes").textContent = "Ajustes"; $("btnAjustes").setAttribute("aria-expanded", "false");
+      await cargarAjustes(); pintar();
+    } catch (e) { m.className = "msg ancho error"; m.textContent = "Sin conexión: " + e.message; }
+    finally { $("guardarAjustes").disabled = false; }
+  });
+
   // ── Bienvenida con sello ──
   function bienvenida() {
     const b = $("bienvenida");
@@ -510,8 +631,11 @@
     const capa = $("corte"), n = colores[serie] || {};
     capa.style.setProperty("--c", n.color_etiquetas || "#7c5cff");
     capa.style.setProperty("--f", n.color_fondo || "#ffffff");
-    $("corteTitulo").textContent = data.quedan === 0 ? "¡Premio conseguido!" : `¡Sellado! ${data.sellos}/${data.visitas_para_premio}`;
-    $("corteTexto").textContent = data.quedan === 0 ? `${data.cliente} ya puede canjearlo` : `A ${data.cliente} le quedan ${data.quedan}`;
+    const bono = data.tipo === "bono", u = data.unidad_plural || "";
+    $("corteTitulo").textContent = bono ? (data.quedan === 0 ? "Bono terminado" : "¡Sesión registrada!") : data.quedan === 0 ? "¡Premio conseguido!" : `¡Sellado! ${data.sellos}/${data.visitas_para_premio}`;
+    $("corteTexto").textContent = bono
+      ? (data.quedan === 0 ? `A ${data.cliente} ya no le quedan ${u}` : `A ${data.cliente} le quedan ${data.quedan} ${u}`)
+      : data.quedan === 0 ? `${data.cliente} ya puede canjearlo` : `A ${data.cliente} le quedan ${data.quedan}`;
     capa.hidden = true; void capa.offsetWidth; // reinicia la animación
     capa.hidden = false;
     clearTimeout(corteTimer); corteTimer = setTimeout(() => { capa.hidden = true; }, 2900);
@@ -597,16 +721,22 @@
     const boton = (txt, fn, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = fn; bt.appendChild(b); };
     const otra = () => boton("Escanear otra", abrirEscaner);
     try {
-      const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
+      const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
       if (!r.length) { nom.textContent = "Tarjeta no encontrada"; det.textContent = "No es de tu negocio o se ha borrado."; otra(); return; }
       const t = r[0], total = t.negocio.visitas_para_premio;
       colores[t.serie] = t.negocio;
       nom.textContent = t.nombre_cliente;
-      det.textContent = t.negocio.nombre + (t.sellos >= total ? " · ¡tiene el premio!" : ` · le quedan ${total - t.sellos}`);
-      $("fichaCuenta").innerHTML = ""; $("fichaCuenta").append(String(t.sellos), Object.assign(document.createElement("small"), { textContent: `/${total}` }));
-      puntos($("fichaPuntos"), t.sellos, total, t.negocio.color_etiquetas);
+      const bono = t.negocio.tipo === "bono", quedan = Math.max(0, total - t.sellos);
+      det.textContent = `${t.negocio.nombre} · ` + (bono ? (quedan ? `${quedan} ${unidad(t.negocio, quedan)} disponibles` : "bono terminado") : t.sellos >= total ? "¡tiene el premio!" : `le quedan ${quedan}`);
+      $("fichaCuenta").innerHTML = "";
+      if (bono) $("fichaCuenta").append(String(quedan), Object.assign(document.createElement("small"), { textContent: ` de ${total}` }));
+      else $("fichaCuenta").append(String(t.sellos), Object.assign(document.createElement("small"), { textContent: `/${total}` }));
+      puntos($("fichaPuntos"), t.sellos, total, t.negocio.color_etiquetas, bono);
       const hacer = (accion) => async () => { await accionar(t.serie, accion); f.hidden = true; };
-      if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar visita", hacer("sello"), true);
+      if (bono) {
+        if (t.sellos >= total) boton("Renovar bono", hacer("canje"), true); else boton(`Usar ${t.negocio.unidad_singular}`, hacer("sello"), true);
+        if (t.sellos > 0 && t.sellos < total) boton("Renovar bono", hacer("canje"));
+      } else if (t.sellos >= total) boton("Canjear premio", hacer("canje"), true); else boton("Sellar visita", hacer("sello"), true);
       if (t.sellos > 0) boton("Deshacer último", hacer("anulacion"));
       boton("Pasar a otro móvil", () => pasarAOtroMovil(t.serie, t.nombre_cliente));
       otra();
@@ -634,7 +764,9 @@
     else if (g && g.estado !== 404) partes.push(`Falló Google Wallet: ${g.motivo || g.estado}`);
     if (!partes.length) partes.push("La tarjeta aún no está guardada en ningún móvil.");
     const fallo = (data.dispositivos > 0 && !av.enviados) || (g && g.estado !== 200 && g.estado !== 404);
-    const que = accion === "canje" ? "premio canjeado" : accion === "anulacion" ? "sello anulado" : `${data.sellos}/${data.visitas_para_premio}`;
+    const bonoA = data.tipo === "bono";
+    const que = accion === "canje" ? (bonoA ? "bono renovado" : "premio canjeado") : accion === "anulacion" ? (bonoA ? "sesión devuelta" : "sello anulado")
+      : bonoA ? `le quedan ${data.quedan} ${data.unidad_plural || ""}` : `${data.sellos}/${data.visitas_para_premio}`;
     aviso(`${data.cliente}: ${que}. ${partes.join(" ")}`, fallo ? "error" : "ok");
     if (accion === "sello") animarCorte(serie, data);
     pintar();
@@ -653,7 +785,7 @@
   };
   $("pass").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("entrar").click(); });
   $("email").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("pass").focus(); });
-  $("salir").onclick = () => { guardar(null); $("ficha").hidden = true; pintar(); };
+  $("salir").onclick = () => { guardar(null); $("ficha").hidden = true; misNegocios = []; $("ajustes").hidden = true; pintar(); };
   $("recargar").onclick = pintar;
   $("corte").onclick = () => { $("corte").hidden = true; };
   $("bienvenida").onclick = () => { $("bienvenida").hidden = true; };

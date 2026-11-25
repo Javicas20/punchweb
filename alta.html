@@ -116,16 +116,16 @@
 
   <div id="contenido" hidden style="display:flex;flex-direction:column;gap:18px">
     <div class="hero">
-      <h1>Tu tarjeta de sellos</h1>
+      <h1 id="titulo">Tu tarjeta de sellos</h1>
       <p class="sub" id="subtitulo"></p>
     </div>
 
     <div class="tarjeta" aria-hidden="true">
-      <div class="tit"><span id="tarjetaMarca"></span><span class="contador">Sellos 0/<span id="tarjetaTotal"></span></span></div>
+      <div class="tit"><span id="tarjetaMarca"></span><span class="contador" id="contador"></span></div>
       <img id="franja" alt="">
       <div class="pie">
         <div><div class="k">Programa</div><div class="v" id="programa"></div></div>
-        <div><div class="k">Premio</div><div class="v" id="premio"></div></div>
+        <div><div class="k" id="kPremio">Premio</div><div class="v" id="premio"></div></div>
       </div>
     </div>
 
@@ -214,12 +214,17 @@
       $("nombreNegocio").textContent = n.nombre;
       ponerNombre(marca, "");
     }
-    $("subtitulo").textContent = `Cada ${n.visitas_para_premio} ${n.unidad_plural}, ${n.premio.toLocaleLowerCase("es")}. Guárdala en la cartera del móvil y te la sellamos en cada visita.`;
-    $("franja").src = `${API}/imagen/${n.imagenes}/strip-0@3x.png`;
-    $("tarjetaTotal").textContent = n.visitas_para_premio;
+    const bono = n.tipo === "bono";
+    $("titulo").textContent = bono ? `Tu bono de ${n.unidad_plural}` : "Tu tarjeta de sellos";
+    $("subtitulo").textContent = bono
+      ? `Lleva en el móvil tu bono de ${n.visitas_para_premio} ${n.unidad_plural}. En cada visita te descontamos una y verás cuántas te quedan.`
+      : `Cada ${n.visitas_para_premio} ${n.unidad_plural}, ${String(n.premio).toLocaleLowerCase("es")}. Guárdala en la cartera del móvil y te la sellamos en cada visita.`;
+    $("franja").src = n.franja;
+    $("contador").textContent = bono ? `Te quedan ${n.visitas_para_premio}` : `Sellos 0/${n.visitas_para_premio}`;
+    $("kPremio").textContent = bono ? "Bono" : "Premio";
     $("programa").textContent = n.programa;
-    $("premio").textContent = n.premio;
-    $("textoPrivacidad").textContent = `Acepto que ${n.nombre} guarde mi nombre y, si lo indico, mi teléfono solo para gestionar mi tarjeta de sellos. No se usan para publicidad y puedo pedir que se borren en el local.`;
+    $("premio").textContent = bono ? `${n.visitas_para_premio} ${n.unidad_plural}` : n.premio;
+    $("textoPrivacidad").textContent = `Acepto que ${n.nombre} guarde mi nombre y, si lo indico, mi teléfono solo para gestionar mi ${n.tipo === "bono" ? "bono" : "tarjeta de sellos"}. No se usan para publicidad y puedo pedir que se borren en el local.`;
 
     if (esIOS) $("btnApple").hidden = false;
     else if (esAndroid) $("btnGoogle").hidden = false;
