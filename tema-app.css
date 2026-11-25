@@ -1,0 +1,58 @@
+/* Tema de la app (panel del negocio y administración): mismo estilo que la portada.
+   Fondo claro, tarjetas blancas con borde fino, títulos en sans y botones en tinta. */
+:root{
+  --fondo:#f5f8f6; --vidrio:#fff; --vidrio-fuerte:#fff; --campo:#fff; --filo:rgba(27,46,39,.1); --brillo:transparent;
+  --tinta:#1b2e27;
+  --display:"Bricolage Grotesque","Inter",-apple-system,BlinkMacSystemFont,sans-serif;
+  --sombra:0 1px 2px rgba(20,40,30,.04),0 10px 30px rgba(20,40,30,.06);
+}
+html,body{background:var(--fondo)}
+body{background:linear-gradient(180deg,#eaf3ef 0,#f5f8f6 340px) no-repeat,var(--fondo)}
+.orbes{display:none}
+
+/* Tarjetas */
+.vidrio{background:#fff;border:1px solid var(--filo);border-radius:20px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:var(--sombra)}
+.vidrio::before{display:none}
+
+/* Títulos en sans, como la portada (la palabra «punch» sigue en su tipografía) */
+.marca span{font-family:"Instrument Serif","Iowan Old Style",Georgia,serif}
+.escanear h2,.ficha .nom,.ficha .cuenta,.clientes h3,.ajustes h3,.capa h2,.login h1 b,.seccion h2,.seccion h3,.mfa h1,.rotulo strong,.bienvenida .saludo b{
+  font-family:var(--display);font-weight:600;letter-spacing:-.025em;color:var(--tinta)}
+.rotulo strong{color:#fff}
+.escanear h2{font-size:30px}
+.ficha .nom{font-size:26px}
+.ficha .cuenta{font-size:36px}
+.clientes h3,.ajustes h3{font-size:20px}
+.seccion h2{font-size:26px}
+.seccion h3{font-size:19px}
+.capa h2,.mfa h1{font-size:24px}
+.login h1 b{font-size:24px}
+
+/* Barra superior */
+.barra{border-radius:16px;padding:8px 8px 8px 14px}
+
+/* Botones */
+.btn{border-radius:10px;background:#fff;border-color:rgba(27,46,39,.14);box-shadow:none}
+.btn:hover{background:#f3f6f4}
+.btn.principal{background:var(--tinta);border-color:var(--tinta);color:#fff;box-shadow:0 6px 16px rgba(27,46,39,.18)}
+.btn.principal:hover{background:#0f1c17}
+.btn.icono{border-radius:10px}
+.escanear .btn.principal{border-radius:12px}
+.capa .caja,.escaner .panel,.toast{background:#fff}
+
+/* Campos */
+.campo input,.entrada input,.fila input,.buscar input,.ajustes select,.campo select,.mfa input.codigo{border-radius:10px;background:#fff;border-color:rgba(27,46,39,.16);box-shadow:none}
+.campo input:focus,.entrada input:focus,.fila input:focus,.buscar input:focus,.mfa input.codigo:focus{border-color:var(--tinta);box-shadow:0 0 0 4px rgba(27,46,39,.08)}
+
+/* Listas y opciones */
+li.cliente,.negocio,.invs li,.enlace,.olvido{background:#fafcfb;border-radius:14px}
+.negocio.activo{border-color:var(--tinta);box-shadow:0 0 0 3px rgba(27,46,39,.08)}
+.tipos button,.color,.estilo{border-radius:12px;background:#fff}
+.tipos button[aria-pressed="true"]{border-color:var(--tinta);box-shadow:0 0 0 3px rgba(27,46,39,.08)}
+.pestanas button{background:#fff}
+.pestanas button[aria-selected="true"]{background:var(--tinta);border-color:var(--tinta)}
+.enlace-texto{color:var(--tinta)}
+.ficha{border-color:rgba(27,46,39,.18)}
+
+/* Pie con enlaces legales */
+.pie a{color:var(--suave)}
