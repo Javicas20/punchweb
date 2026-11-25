@@ -428,9 +428,9 @@
     const dias = n.pagado_hasta ? Math.round((new Date(n.pagado_hasta + "T12:00:00") - hoy) / 864e5) : null;
     if (e === "gratis") return { clase: "gratis", corto: "Gratis", largo: "Plan Gratis: no necesita pago.", aviso: false };
     if (e === "pausada") return { clase: "pausada", corto: "Pausado", largo: "Pausado a mano: no admite tarjetas nuevas.", aviso: true };
-    if (e === "bloqueada") return { clase: "bloqueada", corto: "Bloqueado", largo: `Venció el ${fechaES(n.pagado_hasta)} (más de 30 días): no puede sellar ni admitir tarjetas nuevas. Las tarjetas de sus clientes siguen intactas.`, aviso: true };
-    if (e === "impagada") return { clase: "impagada", corto: "Impagado", largo: n.pagado_hasta ? `Venció el ${fechaES(n.pagado_hasta)}: no admite tarjetas nuevas. Le quedan ${Math.max(0, 30 + dias)} días antes de bloquear el sellado.` : "Sin pagos registrados: no admite tarjetas nuevas.", aviso: true };
-    if (e === "gracia") return { clase: "gracia", corto: "En gracia", largo: `Venció el ${fechaES(n.pagado_hasta)}. Le quedan ${Math.max(0, 7 + dias)} días de gracia antes de bloquear altas nuevas.`, aviso: true };
+    if (e === "bloqueada") return { clase: "bloqueada", corto: "Bloqueado", largo: `Venció el ${fechaES(n.pagado_hasta)} (más de 15 días): no puede sellar ni admitir tarjetas nuevas. Las tarjetas de sus clientes siguen intactas.`, aviso: true };
+    if (e === "impagada") return { clase: "impagada", corto: "Impagado", largo: n.pagado_hasta ? `Venció el ${fechaES(n.pagado_hasta)}: no admite tarjetas nuevas. Le quedan ${Math.max(0, 16 + dias)} días antes de bloquear el sellado.` : "Sin pagos registrados: no admite tarjetas nuevas.", aviso: true };
+    if (e === "gracia") return { clase: "gracia", corto: "En gracia", largo: `Venció el ${fechaES(n.pagado_hasta)}. Le quedan ${Math.max(0, 8 + dias)} días de gracia antes de bloquear altas nuevas.`, aviso: true };
     if (dias !== null && dias <= 10) return { clase: "vence", corto: `Vence en ${dias} d`, largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: true };
     return { clase: "activa", corto: "Al día", largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: false };
   }
