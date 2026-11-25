@@ -7,11 +7,11 @@
 <meta name="theme-color" content="#eef2ee">
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
-<title>Punch · Activa tu cuenta</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23557b6b'/%3E%3Cg transform='translate(1 -5)'%3E%3Crect x='16' y='20' width='9' height='36' rx='4.5' fill='%23fff'/%3E%3Ccircle cx='34' cy='31' r='12.5' fill='none' stroke='%23fff' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E">
+<title>OnceMore · Activa tu cuenta</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='46' fill='#1b2e27'/%3E%3Cg transform='translate(22 20) scale(.78)'%3E%3Cpath d='M64 34H136A12 12 0 0 1 148 46V82A12 12 0 0 1 136 94H64A12 12 0 0 1 52 82V46A12 12 0 0 1 64 34Z' fill='#557b6b'/%3E%3Cpath d='M54 53H146A14 14 0 0 1 160 67V109A14 14 0 0 1 146 123H54A14 14 0 0 1 40 109V67A14 14 0 0 1 54 53Z' fill='#8fb7a3'/%3E%3Cpath d='M43 76H157A17 17 0 0 1 174 93V151A17 17 0 0 1 157 168H43A17 17 0 0 1 26 151V93A17 17 0 0 1 43 76ZM50.5 96H87.5A4.5 4.5 0 0 1 92 100.5V100.5A4.5 4.5 0 0 1 87.5 105H50.5A4.5 4.5 0 0 1 46 100.5V100.5A4.5 4.5 0 0 1 50.5 96ZM50 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM76 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM102 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM130 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z' fill='#f4efe5' fill-rule='evenodd'/%3E%3Cpath d='M133.8 138a6.2 6.2 0 1 0 12.4 0a6.2 6.2 0 1 0 -12.4 0Z' fill='#f4efe5'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="vendor/fuentes/fuentes.css">
 <style>
-  /* Marca Punch · paleta «salvia y niebla»: vidrio claro sobre un fondo vivo de verdes suaves */
+  /* Marca OnceMore · paleta «salvia y niebla»: vidrio claro sobre un fondo vivo de verdes suaves */
   :root{
     --fondo:#eef2ee; --texto:#1d2a24; --suave:rgba(29,42,36,.66); --tenue:rgba(29,42,36,.44);
     --vidrio:rgba(255,255,255,.58); --vidrio-fuerte:rgba(255,255,255,.78); --filo:rgba(255,255,255,.9); --brillo:rgba(255,255,255,.95);
@@ -46,7 +46,8 @@
 
   .marca{display:flex;align-items:center;gap:9px;color:var(--texto);text-decoration:none}
   .marca svg{width:34px;height:34px;color:var(--acento)}
-  .marca span{font:400 30px/1 var(--display);letter-spacing:-.01em}
+  .marca span{font:600 25px/1 "Bricolage Grotesque",Inter,sans-serif;letter-spacing:-.035em;color:var(--tinta,#1b2e27)}
+  .marca span b{font-weight:600;color:var(--acento)}
 
   .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid var(--linea);border-radius:14px;padding:12px 16px;
     background:var(--vidrio-fuerte);color:var(--texto);font-weight:600;transition:transform .15s ease,background .2s ease,box-shadow .2s ease;box-shadow:0 1px 2px rgba(30,52,42,.06)}
@@ -70,7 +71,7 @@
     display:flex;flex-direction:column;gap:16px;justify-content:center}
   main > .marca{justify-content:center}
   main > .marca svg{width:72px;height:72px;padding:13px;border-radius:22px;background:#fff;box-shadow:0 12px 26px rgba(30,52,42,.13)}
-  main > .marca span{font-size:38px}
+  main > .marca span{font-size:32px}
   .caja{padding:28px 22px 22px;display:grid;gap:16px}
   h1{margin:0;font:400 34px/1.1 var(--display);letter-spacing:-.01em;text-align:center;text-wrap:balance}
   .intro{margin:-6px 0 0;text-align:center;color:var(--suave)}
@@ -109,19 +110,13 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <!-- Logo de Punch: una «p» minúscula cuyo hueco es el agujero de una perforadora -->
-    <symbol id="logoPunch" viewBox="0 0 64 64">
-      <g transform="translate(1 -5)" fill="currentColor">
-        <rect x="16" y="20" width="9" height="36" rx="4.5"/>
-        <circle cx="34" cy="31" r="12.5" fill="none" stroke="currentColor" stroke-width="9"/>
-      </g>
-    </symbol>
+    <symbol id="logoMarca" viewBox="0 0 200 200"><path d="M64 34H136A12 12 0 0 1 148 46V82A12 12 0 0 1 136 94H64A12 12 0 0 1 52 82V46A12 12 0 0 1 64 34Z" fill="currentColor" opacity=".32"/><path d="M54 53H146A14 14 0 0 1 160 67V109A14 14 0 0 1 146 123H54A14 14 0 0 1 40 109V67A14 14 0 0 1 54 53Z" fill="currentColor" opacity=".6"/><path d="M43 76H157A17 17 0 0 1 174 93V151A17 17 0 0 1 157 168H43A17 17 0 0 1 26 151V93A17 17 0 0 1 43 76ZM50.5 96H87.5A4.5 4.5 0 0 1 92 100.5V100.5A4.5 4.5 0 0 1 87.5 105H50.5A4.5 4.5 0 0 1 46 100.5V100.5A4.5 4.5 0 0 1 50.5 96ZM50 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM76 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM102 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM130 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z" fill="currentColor" fill-rule="evenodd"/><path d="M133.8 138a6.2 6.2 0 1 0 12.4 0a6.2 6.2 0 1 0 -12.4 0Z" fill="currentColor"/></symbol>
   </defs>
 </svg>
 <div class="orbes" aria-hidden="true"><i></i><i></i><i></i></div>
 
 <main>
-  <div class="marca" role="img" aria-label="Punch"><svg aria-hidden="true"><use href="#logoPunch"/></svg></div>
+  <div class="marca" role="img" aria-label="OnceMore"><svg aria-hidden="true"><use href="#logoMarca"/></svg></div>
 
   <p class="estado vidrio" id="cargando"><span>Comprobando tu invitación…</span></p>
 
@@ -198,10 +193,10 @@
     $("estadoTitulo").textContent = titulo; $("estadoTexto").textContent = texto; $("estadoBoton").textContent = boton;
   }
   const ERRORES = {
-    no_valida: ["Enlace no válido", "Este enlace de invitación no existe. Revisa que lo hayas copiado entero o pide uno nuevo a Punch."],
+    no_valida: ["Enlace no válido", "Este enlace de invitación no existe. Revisa que lo hayas copiado entero o pide uno nuevo a OnceMore."],
     usada: ["Invitación ya usada", "Esta invitación ya se ha utilizado. Si ya creaste tu contraseña, entra en tu panel."],
-    caducada: ["Invitación caducada", "Las invitaciones duran 7 días. Pide una nueva a Punch."],
-    limite_equipo: ["Equipo completo", "Este negocio ya tiene todas las personas que permite su plan. Pide a Punch que lo amplíe."],
+    caducada: ["Invitación caducada", "Las invitaciones duran 7 días. Pide una nueva a OnceMore."],
+    limite_equipo: ["Equipo completo", "Este negocio ya tiene todas las personas que permite su plan. Pide a OnceMore que lo amplíe."],
   };
 
   // ── Reglas (las mismas que comprueba el servidor) ──
@@ -290,7 +285,7 @@
     }
 
     if (d.ya_tenia_cuenta) {
-      if (datos.rol === "admin") { estado("Ya eres administrador", `Ya tenías una cuenta con ${d.email}. Ahora también puede administrar Punch: entra con tu contraseña de siempre.`, true, "Ir a administración"); $("estadoBoton").href = "./admin.html"; return; }
+      if (datos.rol === "admin") { estado("Ya eres administrador", `Ya tenías una cuenta con ${d.email}. Ahora también puede administrar OnceMore: entra con tu contraseña de siempre.`, true, "Ir a administración"); $("estadoBoton").href = "./admin.html"; return; }
       return estado("Negocio añadido a tu cuenta", `Ya tenías una cuenta con ${d.email}. Hemos añadido ${datos.negocio} a tu panel: entra con tu contraseña de siempre.`, true);
     }
     // Entrar automáticamente con la contraseña recién creada
@@ -317,7 +312,7 @@
       if (!r.ok) return estado(...(ERRORES[d.error] || ERRORES.no_valida), false);
       datos = d;
       $("negocio").textContent = d.negocio; $("email").textContent = d.email; $("usuario").value = d.email;
-      if (d.rol === "admin") $("intro").textContent = "Vas a administrar Punch: dar de alta negocios e invitar a sus dueños. Crea una contraseña para entrar.";
+      if (d.rol === "admin") $("intro").textContent = "Vas a administrar OnceMore: dar de alta negocios e invitar a sus dueños. Crea una contraseña para entrar.";
       $("cargando").hidden = true; $("form").hidden = false; $("pass").focus();
     } catch { estado("Sin conexión", "No hemos podido comprobar tu invitación. Revisa internet y vuelve a abrir el enlace.", false, "Reintentar"); $("estadoBoton").href = `${location.pathname}?i=${token}`; }
   })();

@@ -14,8 +14,8 @@ body{background:linear-gradient(180deg,#eaf3ef 0,#f5f8f6 340px) no-repeat,var(--
 .vidrio{background:#fff;border:1px solid var(--filo);border-radius:20px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:var(--sombra)}
 .vidrio::before{display:none}
 
-/* Títulos en sans, como la portada (la palabra «punch» sigue en su tipografía) */
-.marca span{font-family:"Instrument Serif","Iowan Old Style",Georgia,serif}
+/* Títulos en sans, como la portada  */
+.marca span{font-family:var(--display);font-weight:600;letter-spacing:-.035em}
 .escanear h2,.ficha .nom,.ficha .cuenta,.clientes h3,.ajustes h3,.capa h2,.login h1 b,.seccion h2,.seccion h3,.mfa h1,.rotulo strong,.bienvenida .saludo b{
   font-family:var(--display);font-weight:600;letter-spacing:-.025em;color:var(--tinta)}
 .rotulo strong{color:#fff}
@@ -56,3 +56,7 @@ li.cliente,.negocio,.invs li,.enlace,.olvido{background:#fafcfb;border-radius:14
 
 /* Pie con enlaces legales */
 .pie a{color:var(--suave)}
+
+/* Logo OnceMore en tinta, como en la marca */
+.marca svg{color:var(--tinta);width:38px;height:38px}
+.login .marca svg,main > .marca svg{color:var(--tinta)}

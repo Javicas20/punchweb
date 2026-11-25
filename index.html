@@ -5,13 +5,14 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Punch · Tarjetas de sellos en Apple Wallet y Google Wallet</title>
-<meta name="description" content="Punch convierte la tarjeta de sellos de cartón en una tarjeta para Apple Wallet y Google Wallet que se actualiza sola y avisa a tus clientes. Para peluquerías, cafeterías, fisioterapia, estética y más.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23557b6b'/%3E%3Cg transform='translate(1 -5)'%3E%3Crect x='16' y='20' width='9' height='36' rx='4.5' fill='%23fff'/%3E%3Ccircle cx='34' cy='31' r='12.5' fill='none' stroke='%23fff' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E">
+<title>OnceMore · Tarjetas de sellos en Apple Wallet y Google Wallet</title>
+<meta name="description" content="OnceMore convierte la tarjeta de sellos de cartón en una tarjeta para Apple Wallet y Google Wallet que se actualiza sola y avisa a tus clientes. Para peluquerías, cafeterías, fisioterapia, estética y más.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='46' fill='#1b2e27'/%3E%3Cg transform='translate(22 20) scale(.78)'%3E%3Cpath d='M64 34H136A12 12 0 0 1 148 46V82A12 12 0 0 1 136 94H64A12 12 0 0 1 52 82V46A12 12 0 0 1 64 34Z' fill='#557b6b'/%3E%3Cpath d='M54 53H146A14 14 0 0 1 160 67V109A14 14 0 0 1 146 123H54A14 14 0 0 1 40 109V67A14 14 0 0 1 54 53Z' fill='#8fb7a3'/%3E%3Cpath d='M43 76H157A17 17 0 0 1 174 93V151A17 17 0 0 1 157 168H43A17 17 0 0 1 26 151V93A17 17 0 0 1 43 76ZM50.5 96H87.5A4.5 4.5 0 0 1 92 100.5V100.5A4.5 4.5 0 0 1 87.5 105H50.5A4.5 4.5 0 0 1 46 100.5V100.5A4.5 4.5 0 0 1 50.5 96ZM50 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM76 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM102 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM130 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z' fill='#f4efe5' fill-rule='evenodd'/%3E%3Cpath d='M133.8 138a6.2 6.2 0 1 0 12.4 0a6.2 6.2 0 1 0 -12.4 0Z' fill='#f4efe5'/%3E%3C/g%3E%3C/svg%3E">
 <script>
   // Los QR de las tarjetas antiguas y los enlaces de activación apuntan a la portada: se envían al panel
   if (/[?&]t=/.test(location.search) || location.hash === "#bienvenida") location.replace("panel.html" + location.search + location.hash);
 </script>
+<link rel="apple-touch-icon" href="marca/apple-touch-icon.png">
 <link rel="stylesheet" href="vendor/fuentes/fuentes.css">
 <link rel="stylesheet" href="sitio.css">
 <style>
@@ -231,7 +232,7 @@
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-  <symbol id="logoPunch" viewBox="0 0 64 64"><g transform="translate(1 -5)" fill="currentColor"><rect x="16" y="20" width="9" height="36" rx="4.5"/><circle cx="34" cy="31" r="12.5" fill="none" stroke="currentColor" stroke-width="9"/></g></symbol>
+  <symbol id="logoMarca" viewBox="0 0 200 200"><path d="M64 34H136A12 12 0 0 1 148 46V82A12 12 0 0 1 136 94H64A12 12 0 0 1 52 82V46A12 12 0 0 1 64 34Z" fill="currentColor" opacity=".32"/><path d="M54 53H146A14 14 0 0 1 160 67V109A14 14 0 0 1 146 123H54A14 14 0 0 1 40 109V67A14 14 0 0 1 54 53Z" fill="currentColor" opacity=".6"/><path d="M43 76H157A17 17 0 0 1 174 93V151A17 17 0 0 1 157 168H43A17 17 0 0 1 26 151V93A17 17 0 0 1 43 76ZM50.5 96H87.5A4.5 4.5 0 0 1 92 100.5V100.5A4.5 4.5 0 0 1 87.5 105H50.5A4.5 4.5 0 0 1 46 100.5V100.5A4.5 4.5 0 0 1 50.5 96ZM50 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM76 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM102 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0ZM130 138a10 10 0 1 0 20 0a10 10 0 1 0 -20 0Z" fill="currentColor" fill-rule="evenodd"/><path d="M133.8 138a6.2 6.2 0 1 0 12.4 0a6.2 6.2 0 1 0 -12.4 0Z" fill="currentColor"/></symbol>
   <symbol id="ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor" opacity=".16"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="qrDemo" viewBox="0 0 29 29" shape-rendering="crispEdges"><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM25 0h1v1h-1zM26 0h1v1h-1zM27 0h1v1h-1zM28 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM10 1h1v1h-1zM13 1h1v1h-1zM17 1h1v1h-1zM18 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM12 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM18 2h1v1h-1zM19 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM25 2h1v1h-1zM26 2h1v1h-1zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 3h1v1h-1zM11 3h1v1h-1zM15 3h1v1h-1zM17 3h1v1h-1zM19 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM25 3h1v1h-1zM26 3h1v1h-1zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM9 4h1v1h-1zM11 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM14 4h1v1h-1zM15 4h1v1h-1zM16 4h1v1h-1zM17 4h1v1h-1zM19 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM25 4h1v1h-1zM26 4h1v1h-1zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM11 5h1v1h-1zM12 5h1v1h-1zM14 5h1v1h-1zM17 5h1v1h-1zM19 5h1v1h-1zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM25 6h1v1h-1zM26 6h1v1h-1zM27 6h1v1h-1zM28 6h1v1h-1zM8 7h1v1h-1zM9 7h1v1h-1zM10 7h1v1h-1zM12 7h1v1h-1zM13 7h1v1h-1zM14 7h1v1h-1zM16 7h1v1h-1zM17 7h1v1h-1zM0 8h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM10 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM19 8h1v1h-1zM20 8h1v1h-1zM22 8h1v1h-1zM25 8h1v1h-1zM27 8h1v1h-1zM28 8h1v1h-1zM0 9h1v1h-1zM1 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM11 9h1v1h-1zM12 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM19 9h1v1h-1zM20 9h1v1h-1zM21 9h1v1h-1zM22 9h1v1h-1zM23 9h1v1h-1zM24 9h1v1h-1zM28 9h1v1h-1zM0 10h1v1h-1zM2 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM14 10h1v1h-1zM16 10h1v1h-1zM18 10h1v1h-1zM26 10h1v1h-1zM27 10h1v1h-1zM0 11h1v1h-1zM3 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM9 11h1v1h-1zM10 11h1v1h-1zM12 11h1v1h-1zM13 11h1v1h-1zM14 11h1v1h-1zM15 11h1v1h-1zM19 11h1v1h-1zM21 11h1v1h-1zM24 11h1v1h-1zM28 11h1v1h-1zM0 12h1v1h-1zM3 12h1v1h-1zM6 12h1v1h-1zM8 12h1v1h-1zM9 12h1v1h-1zM10 12h1v1h-1zM15 12h1v1h-1zM16 12h1v1h-1zM17 12h1v1h-1zM19 12h1v1h-1zM25 12h1v1h-1zM26 12h1v1h-1zM0 13h1v1h-1zM2 13h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM9 13h1v1h-1zM11 13h1v1h-1zM12 13h1v1h-1zM13 13h1v1h-1zM15 13h1v1h-1zM16 13h1v1h-1zM19 13h1v1h-1zM22 13h1v1h-1zM26 13h1v1h-1zM27 13h1v1h-1zM28 13h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM7 14h1v1h-1zM9 14h1v1h-1zM10 14h1v1h-1zM12 14h1v1h-1zM14 14h1v1h-1zM16 14h1v1h-1zM19 14h1v1h-1zM20 14h1v1h-1zM22 14h1v1h-1zM24 14h1v1h-1zM26 14h1v1h-1zM27 14h1v1h-1zM28 14h1v1h-1zM0 15h1v1h-1zM2 15h1v1h-1zM3 15h1v1h-1zM7 15h1v1h-1zM9 15h1v1h-1zM13 15h1v1h-1zM15 15h1v1h-1zM19 15h1v1h-1zM20 15h1v1h-1zM23 15h1v1h-1zM24 15h1v1h-1zM27 15h1v1h-1zM0 16h1v1h-1zM3 16h1v1h-1zM5 16h1v1h-1zM6 16h1v1h-1zM8 16h1v1h-1zM11 16h1v1h-1zM15 16h1v1h-1zM18 16h1v1h-1zM20 16h1v1h-1zM21 16h1v1h-1zM24 16h1v1h-1zM25 16h1v1h-1zM27 16h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM10 17h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM15 17h1v1h-1zM17 17h1v1h-1zM20 17h1v1h-1zM21 17h1v1h-1zM23 17h1v1h-1zM25 17h1v1h-1zM26 17h1v1h-1zM27 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM6 18h1v1h-1zM7 18h1v1h-1zM9 18h1v1h-1zM11 18h1v1h-1zM15 18h1v1h-1zM16 18h1v1h-1zM17 18h1v1h-1zM21 18h1v1h-1zM23 18h1v1h-1zM24 18h1v1h-1zM26 18h1v1h-1zM4 19h1v1h-1zM5 19h1v1h-1zM11 19h1v1h-1zM15 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM19 19h1v1h-1zM21 19h1v1h-1zM22 19h1v1h-1zM23 19h1v1h-1zM26 19h1v1h-1zM1 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM8 20h1v1h-1zM9 20h1v1h-1zM10 20h1v1h-1zM12 20h1v1h-1zM13 20h1v1h-1zM16 20h1v1h-1zM17 20h1v1h-1zM20 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM23 20h1v1h-1zM24 20h1v1h-1zM25 20h1v1h-1zM26 20h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM12 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM16 21h1v1h-1zM17 21h1v1h-1zM18 21h1v1h-1zM20 21h1v1h-1zM24 21h1v1h-1zM25 21h1v1h-1zM26 21h1v1h-1zM27 21h1v1h-1zM28 21h1v1h-1zM0 22h1v1h-1zM1 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM5 22h1v1h-1zM6 22h1v1h-1zM8 22h1v1h-1zM12 22h1v1h-1zM13 22h1v1h-1zM18 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM24 22h1v1h-1zM25 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM8 23h1v1h-1zM11 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM20 23h1v1h-1zM24 23h1v1h-1zM25 23h1v1h-1zM27 23h1v1h-1zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM6 24h1v1h-1zM10 24h1v1h-1zM11 24h1v1h-1zM14 24h1v1h-1zM17 24h1v1h-1zM20 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM23 24h1v1h-1zM24 24h1v1h-1zM26 24h1v1h-1zM0 25h1v1h-1zM2 25h1v1h-1zM3 25h1v1h-1zM4 25h1v1h-1zM6 25h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM14 25h1v1h-1zM15 25h1v1h-1zM16 25h1v1h-1zM17 25h1v1h-1zM18 25h1v1h-1zM20 25h1v1h-1zM23 25h1v1h-1zM24 25h1v1h-1zM25 25h1v1h-1zM28 25h1v1h-1zM0 26h1v1h-1zM2 26h1v1h-1zM3 26h1v1h-1zM4 26h1v1h-1zM6 26h1v1h-1zM8 26h1v1h-1zM9 26h1v1h-1zM10 26h1v1h-1zM12 26h1v1h-1zM13 26h1v1h-1zM19 26h1v1h-1zM21 26h1v1h-1zM23 26h1v1h-1zM26 26h1v1h-1zM28 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM9 27h1v1h-1zM15 27h1v1h-1zM16 27h1v1h-1zM18 27h1v1h-1zM19 27h1v1h-1zM20 27h1v1h-1zM21 27h1v1h-1zM25 27h1v1h-1zM27 27h1v1h-1zM0 28h1v1h-1zM1 28h1v1h-1zM2 28h1v1h-1zM3 28h1v1h-1zM4 28h1v1h-1zM5 28h1v1h-1zM6 28h1v1h-1zM8 28h1v1h-1zM9 28h1v1h-1zM10 28h1v1h-1zM12 28h1v1h-1zM14 28h1v1h-1zM16 28h1v1h-1zM18 28h1v1h-1zM20 28h1v1h-1zM22 28h1v1h-1zM23 28h1v1h-1zM24 28h1v1h-1zM27 28h1v1h-1z"/></symbol>
 </defs></svg>
@@ -239,7 +240,7 @@
 <div class="anuncio">Demo gratuita con la imagen de tu negocio. <a href="#contacto">Pídela aquí</a></div>
 <header class="cab">
   <div class="envoltura fila">
-    <a class="marca" href="./" aria-label="Punch, inicio"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></a>
+    <a class="marca" href="./" aria-label="OnceMore, inicio"><svg aria-hidden="true"><use href="#logoMarca"/></svg><span>Once<b>More</b></span></a>
     <nav class="menu" aria-label="Principal">
       <a href="#producto">Producto</a><a href="#avisos">Avisos</a><a href="#sectores">Sectores</a><a href="#precios">Precios</a><a href="#preguntas">Preguntas</a>
     </nav>
@@ -255,9 +256,9 @@
     <div class="envoltura">
       <h1 class="titulo">Tarjetas de sellos en Apple Wallet y Google Wallet</h1>
       <p class="sub">La forma sencilla de que tus clientes vuelvan, sin cartón y sin apps</p>
-      <p class="lema">Con Punch, tu tarjeta de fidelización vive en la cartera del móvil de tus clientes. La sellas en un segundo, se actualiza sola y les avisa de cuánto les falta para su premio.</p>
+      <p class="lema">Con OnceMore, tu tarjeta de fidelización vive en la cartera del móvil de tus clientes. La sellas en un segundo, se actualiza sola y les avisa de cuánto les falta para su premio.</p>
       <div class="acciones">
-        <a class="btn oscuro" href="#contacto">Quiero Punch en mi negocio</a>
+        <a class="btn oscuro" href="#contacto">Quiero OnceMore en mi negocio</a>
         <a class="btn claro" href="#producto">Ver cómo funciona</a>
       </div>
       <div class="carteras" aria-label="Compatible con">
@@ -305,7 +306,7 @@
           <li><svg aria-hidden="true"><use href="#ok"/></svg>Funciona en iPhone y en Android</li>
         </ul>
       </div>
-      <div class="movil oscuro" id="movilAvisos" role="img" aria-label="Pantalla de bloqueo con avisos de Punch">
+      <div class="movil oscuro" id="movilAvisos" role="img" aria-label="Pantalla de bloqueo con avisos de OnceMore">
         <div class="pant bloqueo">
           <div class="barra-estado"><span></span><span class="ic"><i></i><i></i></span></div>
           <div class="fecha">martes, 12 de mayo</div>
@@ -364,7 +365,7 @@
         <li><svg aria-hidden="true"><use href="#ok"/></svg>Acceso para tu equipo con contraseña segura</li>
       </ul>
     </div>
-    <div class="movil aparece" role="img" aria-label="Panel de Punch para sellar desde el móvil">
+    <div class="movil aparece" role="img" aria-label="Panel de OnceMore para sellar desde el móvil">
       <div class="pant panel-m">
         <div class="barra-estado"><span>9:41</span><span class="ic"><i></i><i></i></span></div>
         <div class="contenido">
@@ -385,7 +386,7 @@
     <div class="centro aparece">
       <span class="eti">Para quién es</span>
       <h2 class="titulo">Pensado para negocios de barrio que quieren fidelizar</h2>
-      <p>Si tus clientes repiten, Punch te ayuda a que repitan más.</p>
+      <p>Si tus clientes repiten, OnceMore te ayuda a que repitan más.</p>
     </div>
     <div class="rejilla">
       <article class="sector aparece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg><h3>Peluquerías y barberías</h3><p>Diez cortes y el siguiente gratis.</p></article>
@@ -404,7 +405,7 @@
   <section class="llamada">
     <div class="envoltura">
       <div><p>¿Quieres verla con tu logo?</p><a class="btn oscuro" href="#contacto">Pedir una demo</a></div>
-      <div><p>¿Ya usas Punch en tu negocio?</p><a class="btn oscuro" href="panel.html">Iniciar sesión</a></div>
+      <div><p>¿Ya usas OnceMore en tu negocio?</p><a class="btn oscuro" href="panel.html">Iniciar sesión</a></div>
     </div>
   </section>
 
@@ -418,8 +419,8 @@
       <article class="plan aparece">
         <span class="nombre">Gratis</span>
         <span class="precio">0 €<small> /mes</small></span>
-        <p class="desc">Para probar Punch con tus primeros clientes.</p>
-        <ul><li>Hasta 6 tarjetas activas</li><li>1 persona en el panel</li><li>Diseño estándar de Punch</li></ul>
+        <p class="desc">Para probar OnceMore con tus primeros clientes.</p>
+        <ul><li>Hasta 6 tarjetas activas</li><li>1 persona en el panel</li><li>Diseño estándar de OnceMore</li></ul>
         <a class="btn claro" href="#contacto">Probar gratis</a>
       </article>
       <article class="plan aparece">
@@ -484,7 +485,7 @@
   <div class="envoltura">
     <div class="cols">
       <div>
-        <a class="marca" href="./" aria-label="Punch, inicio"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></a>
+        <a class="marca" href="./" aria-label="OnceMore, inicio"><svg aria-hidden="true"><use href="#logoMarca"/></svg><span>Once<b>More</b></span></a>
         <p>Tarjetas de fidelización y bonos en Apple Wallet y Google Wallet para negocios de barrio.</p>
         <div class="chips"><span>RGPD</span><span>Datos alojados en la UE</span><span>Sin cookies de seguimiento</span></div>
       </div>
@@ -492,12 +493,12 @@
       <div><h4>Negocios</h4><ul><li><a href="panel.html">Iniciar sesión</a></li><li><a href="restablecer.html">Recuperar contraseña</a></li><li><a href="#contacto">Pedir demo</a></li></ul></div>
       <div><h4>Legal</h4><ul><li><a href="aviso-legal.html">Aviso legal</a></li><li><a href="privacidad.html">Privacidad</a></li><li><a href="cookies.html">Cookies</a></li></ul></div>
     </div>
-    <div class="bajo"><span>© <span id="anio"></span> Punch · <mark class="hueco">[TITULAR]</mark></span><span>Apple Wallet y Google Wallet son marcas de sus respectivos titulares.</span></div>
+    <div class="bajo"><span>© <span id="anio"></span> OnceMore · <mark class="hueco">[TITULAR]</mark></span><span>Apple Wallet y Google Wallet son marcas de sus respectivos titulares.</span></div>
   </div>
 </footer>
 
 <div class="aviso-cookies vidrio" id="avisoCookies" hidden role="region" aria-label="Aviso de cookies">
-  <p>Punch no usa cookies de publicidad ni de análisis. Solo guardamos en tu navegador lo imprescindible para que funcione, como tu sesión. <a href="cookies.html">Más información</a></p>
+  <p>OnceMore no usa cookies de publicidad ni de análisis. Solo guardamos en tu navegador lo imprescindible para que funcione, como tu sesión. <a href="cookies.html">Más información</a></p>
   <button class="btn principal" id="cerrarCookies" type="button">Entendido</button>
 </div>
 
@@ -507,7 +508,7 @@
   const CONTACTO = "";
   if (CONTACTO) {
     $id("emailContacto").textContent = CONTACTO; $id("emailContacto").classList.remove("hueco");
-    $id("correoContacto").href = `mailto:${CONTACTO}?subject=${encodeURIComponent("Quiero Punch en mi negocio")}`;
+    $id("correoContacto").href = `mailto:${CONTACTO}?subject=${encodeURIComponent("Quiero OnceMore en mi negocio")}`;
   }
   // Aparición suave al hacer scroll (y entrada de los avisos)
   const objetivos = document.querySelectorAll(".aparece, #movilAvisos");
