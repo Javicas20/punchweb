@@ -61,6 +61,9 @@
   .campo input,.entrada input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(30,52,42,.05)}
   .campo input::placeholder{color:var(--tenue)}
   .campo input:focus,.entrada input:focus{outline:none;border-color:var(--acento);background:#fff;box-shadow:0 0 0 4px rgba(85,123,107,.16)}
+  .enlace-texto{justify-self:center;border:0;background:none;padding:4px;color:var(--acento-osc);font-size:14px;font-weight:500;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .olvido{display:grid;gap:10px;padding:14px;border-radius:16px;background:rgba(255,255,255,.55);border:1px solid var(--linea)}
+  .olvido p{margin:0;font-size:14px;color:var(--suave)}
   .msg{min-height:1.4em;margin:0;text-align:center;font-size:14px;color:var(--suave)}
   .msg.error{color:var(--error)}
   .pie{text-align:center;font-size:12px;color:var(--tenue)}
@@ -241,6 +244,13 @@
     </label>
     <button class="btn principal ancho" id="entrar">Entrar</button>
     <p class="msg" id="loginMsg" role="status"></p>
+    <button type="button" class="enlace-texto" id="btnOlvido" aria-expanded="false">¿Has olvidado tu contraseña?</button>
+    <div class="olvido" id="panelOlvido" hidden>
+      <p>Escribe tu email y te enviaremos un enlace para crear una contraseña nueva.</p>
+      <label class="campo" for="emailOlvido">Email<input id="emailOlvido" type="email" autocomplete="username" inputmode="email"></label>
+      <button type="button" class="btn ancho" id="pedirEnlace">Pedir enlace</button>
+      <p class="msg" id="msgOlvido" role="status"></p>
+    </div>
   </section>
 
   <!-- Panel -->
@@ -367,7 +377,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "13";
+  const VERSION = "14";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `Punch · prueba técnica · v${VERSION}`;
@@ -792,6 +802,22 @@
   document.querySelector("[data-from-input]").onclick = () => { const s = serieDeTexto($("serie").value) || $("serie").value.trim().toLowerCase(); if (s) mostrarFicha(s); };
   $("btnEscanear").onclick = abrirEscaner;
   $("cerrarEscaner").onclick = cerrarEscaner;
+  // ── ¿Has olvidado tu contraseña? ──
+  $("btnOlvido").onclick = () => {
+    const p = $("panelOlvido"), abrir = p.hidden; p.hidden = !abrir; $("btnOlvido").setAttribute("aria-expanded", String(abrir));
+    if (abrir) { $("emailOlvido").value = $("email").value.trim(); $("emailOlvido").focus(); }
+  };
+  $("pedirEnlace").onclick = async () => {
+    const email = $("emailOlvido").value.trim(), m = $("msgOlvido"); m.className = "msg";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.className = "msg error"; m.textContent = "Escribe un email válido."; return; }
+    $("pedirEnlace").disabled = true; m.textContent = "Enviando…";
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/restablecer`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ solicitar: email }) });
+      if (!r.ok) throw new Error();
+      m.textContent = "Petición recibida. Si el email está registrado, te enviaremos un enlace para crear una contraseña nueva. Revisa tu correo, también la carpeta de spam.";
+    } catch { m.className = "msg error"; m.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."; }
+    finally { $("pedirEnlace").disabled = false; }
+  };
   (async () => {
     const vieneDeActivar = location.hash === "#bienvenida";
     if (vieneDeActivar) history.replaceState(null, "", location.pathname + location.search);

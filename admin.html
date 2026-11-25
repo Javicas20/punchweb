@@ -61,6 +61,9 @@
   .campo input,.entrada input{width:100%;padding:14px 15px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);font-size:16px;color:var(--texto);box-shadow:inset 0 1px 2px rgba(30,52,42,.05)}
   .campo input::placeholder{color:var(--tenue)}
   .campo input:focus,.entrada input:focus{outline:none;border-color:var(--acento);background:#fff;box-shadow:0 0 0 4px rgba(85,123,107,.16)}
+  .enlace-texto{justify-self:center;border:0;background:none;padding:4px;color:var(--acento-osc);font-size:14px;font-weight:500;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .olvido{display:grid;gap:10px;padding:14px;border-radius:16px;background:rgba(255,255,255,.55);border:1px solid var(--linea)}
+  .olvido p{margin:0;font-size:14px;color:var(--suave)}
   .msg{min-height:1.4em;margin:0;text-align:center;font-size:14px;color:var(--suave)}
   .msg.error{color:var(--error)}
   .pie{text-align:center;font-size:12px;color:var(--tenue)}
@@ -169,6 +172,13 @@
     <label class="campo" for="pass">Contraseña<input id="pass" type="password" autocomplete="current-password"></label>
     <button class="btn principal ancho" id="entrar">Entrar</button>
     <p class="msg" id="loginMsg" role="status"></p>
+    <button type="button" class="enlace-texto" id="btnOlvido" aria-expanded="false">¿Has olvidado tu contraseña?</button>
+    <div class="olvido" id="panelOlvido" hidden>
+      <p>Escribe tu email y te enviaremos un enlace para crear una contraseña nueva.</p>
+      <label class="campo" for="emailOlvido">Email<input id="emailOlvido" type="email" autocomplete="username" inputmode="email"></label>
+      <button type="button" class="btn ancho" id="pedirEnlace">Pedir enlace</button>
+      <p class="msg" id="msgOlvido" role="status"></p>
+    </div>
   </section>
 
   <div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
@@ -176,6 +186,12 @@
       <div class="izq"><div class="marca"><svg aria-hidden="true"><use href="#logoPunch"/></svg><span>punch</span></div><span class="titulo">Administración</span></div>
       <button class="btn icono" id="salir" title="Salir" aria-label="Salir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button>
     </header>
+
+    <!-- Peticiones de nueva contraseña -->
+    <section class="seccion vidrio" id="peticiones" hidden aria-labelledby="tituloPeticiones">
+      <div><h2 id="tituloPeticiones">Peticiones de nueva contraseña</h2><p class="sub">Genera un enlace y envíaselo por correo. Caduca en 24 horas.</p></div>
+      <ul class="invs" id="listaPeticiones"></ul>
+    </section>
 
     <!-- Negocios -->
     <section class="seccion vidrio" aria-labelledby="tituloNegocios">
@@ -232,6 +248,7 @@
         <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
         <button role="tab" id="tabInvs" aria-selected="false">Invitaciones</button>
         <button role="tab" id="tabProg" aria-selected="false">Programa</button>
+        <button role="tab" id="tabEquipo" aria-selected="false">Equipo</button>
       </div>
 
       <div id="panInvitar" style="display:grid;gap:12px">
@@ -260,6 +277,11 @@
       </div>
 
       <div id="panInvs" hidden><ul class="invs" id="listaInvs"></ul></div>
+
+      <div id="panEquipo" hidden style="display:grid;gap:12px">
+        <ul class="invs" id="listaEquipo"></ul>
+        <div id="enlaceEquipo"></div>
+      </div>
 
       <form id="panProg" hidden class="rejilla" novalidate>
         <div class="campo ancho"><span>Tipo de tarjeta</span>
@@ -294,6 +316,7 @@
     visitas_no_validas: "El número de pasos debe estar entre 1 y 50.", tipo_no_valido: "Elige el tipo de tarjeta.", color_no_valido: "Algún color no es válido.",
     email_no_valido: "El email no parece correcto.", rol_no_valido: "Elige un rol.", negocio_no_encontrado: "Ese negocio ya no existe.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
+    usuario_no_encontrado: "No hay ninguna cuenta con ese email.",
   };
   let avisoT;
   function aviso(t, tipo = "") { const e = $("estado"); e.textContent = t; e.className = `toast vidrio ver ${tipo}`; clearTimeout(avisoT); avisoT = setTimeout(() => e.classList.remove("ver"), tipo === "error" ? 7000 : 4000); }
@@ -341,7 +364,7 @@
       if (!esAdmin) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").className = "msg error"; $("loginMsg").textContent = ERRORES.no_autorizado; return; }
     } catch (e) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").textContent = textoError(e); return; }
     $("login").hidden = true; $("app").hidden = false;
-    await cargarNegocios();
+    await cargarNegocios(); cargarPeticiones();
   }
 
   async function cargarNegocios() {
@@ -435,11 +458,12 @@
 
   // ── Detalle de un negocio ──
   function pestana(cual) {
-    for (const [tab, pan] of [["tabInvitar", "panInvitar"], ["tabQR", "panQR"], ["tabInvs", "panInvs"], ["tabProg", "panProg"]]) {
+    for (const [tab, pan] of [["tabInvitar", "panInvitar"], ["tabQR", "panQR"], ["tabInvs", "panInvs"], ["tabProg", "panProg"], ["tabEquipo", "panEquipo"]]) {
       $(tab).setAttribute("aria-selected", String(tab === cual)); $(pan).hidden = tab !== cual;
     }
     if (cual === "tabQR") pintarQR();
     if (cual === "tabInvs") cargarInvitaciones();
+    if (cual === "tabEquipo") cargarEquipo();
     if (cual === "tabProg") {
       elegirTipo("prog", actual.tipo || "premio");
       $("gPasos").value = actual.visitas_para_premio; $("gPremio").value = actual.premio || "";
@@ -470,6 +494,7 @@
   $("tabQR").onclick = () => pestana("tabQR");
   $("tabInvs").onclick = () => pestana("tabInvs");
   $("tabProg").onclick = () => pestana("tabProg");
+  $("tabEquipo").onclick = () => pestana("tabEquipo");
 
   function abrir(id) {
     actual = negocios.find((n) => n.id === id); if (!actual) return;
@@ -549,6 +574,91 @@
         li.appendChild(b);
       }
       ul.appendChild(li);
+    }
+  }
+
+  // ── ¿Has olvidado tu contraseña? ──
+  $("btnOlvido").onclick = () => {
+    const p = $("panelOlvido"), abrir = p.hidden; p.hidden = !abrir; $("btnOlvido").setAttribute("aria-expanded", String(abrir));
+    if (abrir) { $("emailOlvido").value = $("email").value.trim(); $("emailOlvido").focus(); }
+  };
+  $("pedirEnlace").onclick = async () => {
+    const email = $("emailOlvido").value.trim(), m = $("msgOlvido"); m.className = "msg";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.className = "msg error"; m.textContent = "Escribe un email válido."; return; }
+    $("pedirEnlace").disabled = true; m.textContent = "Enviando…";
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/restablecer`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ solicitar: email }) });
+      if (!r.ok) throw new Error();
+      m.textContent = "Petición recibida. Si el email está registrado, te enviaremos un enlace para crear una contraseña nueva. Revisa tu correo, también la carpeta de spam.";
+    } catch { m.className = "msg error"; m.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."; }
+    finally { $("pedirEnlace").disabled = false; }
+  };
+  // ── Restablecer contraseñas ──
+  async function enlaceRestablecer(args) {
+    const [r] = await rpc("admin_restablecer", args);
+    return { url: `${WEB}restablecer.html?r=${r.token}`, email: r.email };
+  }
+  // Caja con el enlace, «Copiar» y «Abrir en el correo»
+  function cajaEnlace(cont, email, url, alHacer) {
+    cont.textContent = "";
+    const caja = document.createElement("div"); caja.className = "enlace"; caja.style.gridColumn = "1/-1";
+    const t = document.createElement("span"); t.className = "campo"; t.textContent = `Enlace para ${email} · caduca en 24 horas`;
+    const code = document.createElement("code"); code.textContent = url;
+    const acc = document.createElement("div"); acc.className = "acciones";
+    const c = document.createElement("button"); c.className = "btn"; c.textContent = "Copiar enlace"; c.onclick = () => copiar(url);
+    const a = document.createElement("a"); a.className = "btn principal"; a.style.textDecoration = "none"; a.textContent = "Abrir en el correo";
+    const cuerpo = `Hola:\n\nHemos recibido una petición para cambiar tu contraseña de Punch.\n\nAbre este enlace y crea una contraseña nueva (caduca en 24 horas):\n${url}\n\nSi no lo has pedido tú, ignora este correo.\n\nUn saludo`;
+    a.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("Crea tu nueva contraseña de Punch")}&body=${encodeURIComponent(cuerpo)}`;
+    if (alHacer) a.addEventListener("click", alHacer);
+    acc.append(c, a); caja.append(t, code, acc); cont.appendChild(caja);
+  }
+
+  async function cargarPeticiones() {
+    let lista = [];
+    try { lista = await rpc("admin_solicitudes_contrasena"); } catch { return; }
+    $("peticiones").hidden = !lista.length;
+    const ul = $("listaPeticiones"); ul.textContent = "";
+    const fecha = (d) => new Date(d).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    for (const p of lista) {
+      const li = document.createElement("li");
+      const info = document.createElement("div"); info.style.minWidth = "0";
+      const mail = document.createElement("div"); mail.className = "mail"; mail.textContent = p.email;
+      const est = document.createElement("div"); est.className = "est";
+      est.textContent = `Pedida el ${fecha(p.creada_en)}` + (p.tiene_cuenta ? "" : " · no hay ninguna cuenta con este email");
+      info.append(mail, est); li.appendChild(info);
+      const acciones = document.createElement("div"); acciones.className = "acciones"; acciones.style.gridColumn = "1/-1";
+      if (p.tiene_cuenta) {
+        const g = document.createElement("button"); g.className = "btn principal"; g.textContent = "Generar enlace";
+        g.onclick = async () => {
+          try { const e = await enlaceRestablecer({ p_email: p.email }); cajaEnlace(acciones, e.email, e.url, () => setTimeout(async () => { await rpc("admin_atender_solicitud", { p_email: p.email }); cargarPeticiones(); }, 1500)); }
+          catch (err) { aviso(textoError(err), "error"); }
+        };
+        acciones.appendChild(g);
+      }
+      const d = document.createElement("button"); d.className = "btn"; d.textContent = p.tiene_cuenta ? "Descartar" : "Quitar de la lista";
+      d.onclick = async () => { try { await rpc("admin_atender_solicitud", { p_email: p.email }); cargarPeticiones(); } catch (err) { aviso(textoError(err), "error"); } };
+      acciones.appendChild(d); li.appendChild(acciones); ul.appendChild(li);
+    }
+  }
+
+  async function cargarEquipo() {
+    const ul = $("listaEquipo"); ul.textContent = ""; $("enlaceEquipo").textContent = "";
+    let equipo = [];
+    try { equipo = await rpc("admin_equipo", { p_negocio: actual.id }); } catch (e) { aviso(textoError(e), "error"); return; }
+    if (!equipo.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay nadie en el equipo. Invita al dueño en «Invitar»."; ul.appendChild(li); return; }
+    for (const m of equipo) {
+      const li = document.createElement("li");
+      const info = document.createElement("div"); info.style.minWidth = "0";
+      const mail = document.createElement("div"); mail.className = "mail"; mail.textContent = m.email;
+      const est = document.createElement("div"); est.className = "est";
+      est.textContent = (m.rol === "dueno" ? "Dueño" : "Empleado") + " · " + (m.ultimo_acceso ? `último acceso el ${new Date(m.ultimo_acceso).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}` : "todavía no ha entrado");
+      info.append(mail, est);
+      const b = document.createElement("button"); b.className = "btn"; b.textContent = "Restablecer contraseña";
+      b.onclick = async () => {
+        try { const e = await enlaceRestablecer({ p_user: m.user_id }); cajaEnlace($("enlaceEquipo"), e.email, e.url); $("enlaceEquipo").scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+        catch (err) { aviso(textoError(err), "error"); }
+      };
+      li.append(info, b); ul.appendChild(li);
     }
   }
 
