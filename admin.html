@@ -2,14 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://pifswbumwcuqpvneqtbh.supabase.co; connect-src https://pifswbumwcuqpvneqtbh.supabase.co https://api.pwnedpasswords.com; media-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://pifswbumwcuqpvneqtbh.supabase.co; connect-src https://pifswbumwcuqpvneqtbh.supabase.co https://api.pwnedpasswords.com; media-src 'self' blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#eef2ee">
 <meta name="robots" content="noindex">
 <title>Punch · Administración</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23557b6b'/%3E%3Cg transform='translate(1 -5)'%3E%3Crect x='16' y='20' width='9' height='36' rx='4.5' fill='%23fff'/%3E%3Ccircle cx='34' cy='31' r='12.5' fill='none' stroke='%23fff' stroke-width='9'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="vendor/fuentes/fuentes.css">
 <style>
   /* Marca Punch · paleta «salvia y niebla»: vidrio claro sobre un fondo vivo de verdes suaves */
   :root{
@@ -324,7 +323,7 @@
       </form>
     </section>
   </div>
-  <p class="pie" id="pie">Punch · administración</p>
+  <p class="pie">Punch · administración · <a href="privacidad.html" style="color:inherit">Privacidad</a> · <a href="aviso-legal.html" style="color:inherit">Aviso legal</a></p>
 </div>
 <div class="toast vidrio" id="estado" role="status" aria-live="polite"></div>
 <script>

@@ -1,2 +1,3 @@
 qrcode-generator 1.4.4 · Copyright (c) 2009 Kazuhiko Arase · Licencia MIT (ver cabecera del archivo)
 jsQR 1.4.0 · Licencia Apache 2.0 (ver LICENSE-jsqr.txt)
+Instrument Serif, Inter y Bricolage Grotesque · SIL Open Font License 1.1 (https://openfontlicense.org) · paquetes @fontsource 5.1.0
