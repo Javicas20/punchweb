@@ -137,6 +137,10 @@
   /* Plan del negocio */
   .plan-fila{display:grid;gap:10px;padding:14px;border-radius:14px;border:1px solid var(--linea);background:#fafcfb}
   .plan-fila .fila{display:flex;gap:8px}
+  .plan-fila .fila input{flex:2;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--linea);background:#fff;font-size:15px}
+  .ubicacion .fila select{flex:0 0 auto}
+  .ubicacion .sub a{color:var(--acento)}
+  @media (max-width:600px){.ubicacion .fila{flex-wrap:wrap}.ubicacion .fila input{flex:1 1 100%}}
   .plan-fila .fila select{flex:1;min-width:0;padding:11px 12px;border-radius:10px;border:1px solid var(--linea);background:#fff;font-size:15px}
   .uso{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .uso div{display:grid;gap:5px;font-size:13px;color:var(--suave)}
@@ -279,6 +283,15 @@
         <div class="uso" id="usoPlan"></div>
         <form class="fila" id="formPlan" novalidate><select id="dPlan" aria-label="Plan del negocio"><option value="gratis">Gratis · 6 tarjetas</option><option value="semilla">Semilla · 300 tarjetas</option><option value="brote">Brote · 1.500 tarjetas</option><option value="raiz">Raíz · 5.000 tarjetas</option></select><button class="btn" type="submit" id="guardarPlan">Cambiar plan</button></form>
       </div>
+      <div class="plan-fila ubicacion">
+        <div><b>Ubicación del local</b> <span class="sub" style="margin:0;display:inline">· al acercarse, la tarjeta aparece en la pantalla de bloqueo</span></div>
+        <form class="fila" id="formUbic" novalidate>
+          <input id="uCoords" placeholder="Pega aquí las coordenadas de Google Maps (p. ej. 40.4168, -3.7038)" autocomplete="off" inputmode="decimal">
+          <select id="uRadio" aria-label="Radio"><option value="10">10 m</option><option value="30">30 m</option><option value="50">50 m</option><option value="100">100 m</option></select>
+          <button class="btn" type="submit" id="guardarUbic">Guardar</button>
+        </form>
+        <p class="sub" id="uEstado" style="margin:0"></p>
+      </div>
       <div class="pestanas" role="tablist">
         <button role="tab" id="tabInvitar" aria-selected="true">Invitar</button>
         <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
@@ -353,6 +366,8 @@
     email_no_valido: "El email no parece correcto.", rol_no_valido: "Elige un rol.", negocio_no_encontrado: "Ese negocio ya no existe.",
     sin_sesion: "Tu sesión ha caducado. Vuelve a entrar.",
     usuario_no_encontrado: "No hay ninguna cuenta con ese email.",
+    ubicacion_no_valida: "Esas coordenadas no son válidas. En Google Maps, mantén pulsado el local y copia los dos números (latitud, longitud).",
+    radio_no_valido: "Elige un radio válido.",
     limite_equipo: "El equipo ya tiene todas las personas que permite su plan (contando invitaciones pendientes). Sube el plan o anula una invitación.",
     plan_no_valido: "Elige un plan válido.",
   };
@@ -613,6 +628,7 @@
   }
 
   function pintarUso() {
+    pintarUbic();
     $("dPlan").value = actual.plan;
     const c = $("usoPlan"); c.textContent = "";
     for (const [titulo, usado, limite] of [["Tarjetas activas", actual.tarjetas, actual.limite_tarjetas], ["Equipo", actual.personal, actual.limite_equipo]]) {
@@ -634,6 +650,45 @@
       const id = actual.id; await cargarNegocios(); abrir(id);
     } catch (e) { aviso(textoError(e), "error"); $("dPlan").value = actual.plan; }
     finally { $("guardarPlan").disabled = false; }
+  });
+
+  // ── Ubicación del local ──
+  function pintarUbic() {
+    const hay = actual.latitud != null && actual.longitud != null;
+    $("uCoords").value = hay ? `${actual.latitud}, ${actual.longitud}` : "";
+    $("uRadio").value = String([10, 30, 50, 100].includes(actual.radio_metros) ? actual.radio_metros : 10);
+    const e = $("uEstado"); e.textContent = "";
+    if (hay) {
+      e.append("Activa · radio " + actual.radio_metros + " m · ");
+      const a = document.createElement("a"); a.href = `https://www.google.com/maps?q=${actual.latitud},${actual.longitud}`; a.target = "_blank"; a.rel = "noopener"; a.textContent = "ver en el mapa";
+      e.append(a, " · deja el campo vacío y guarda para quitarla.");
+    } else e.textContent = "Sin ubicación. En Google Maps, mantén pulsado el local y copia las coordenadas que aparecen.";
+  }
+  function leerCoords(txt) {
+    // Acepta «40.4168, -3.7038», «40,4168 -3,7038» y «40.4168° N, 3.7038° W» (O = oeste)
+    const m = txt.trim().match(/^(-?\d{1,3}(?:[.,]\d+)?)\s*°?\s*([NSns])?\s*[,; ]\s*(-?\d{1,3}(?:[.,]\d+)?)\s*°?\s*([EeWwOo])?$/);
+    if (!m) return null;
+    let lat = Number(m[1].replace(",", ".")), lng = Number(m[3].replace(",", "."));
+    if (/[Ss]/.test(m[2] || "")) lat = -Math.abs(lat);
+    if (/[WwOo]/.test(m[4] || "")) lng = -Math.abs(lng);
+    return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? [lat, lng] : null;
+  }
+  $("formUbic").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const txt = $("uCoords").value.trim(), c = txt ? leerCoords(txt) : [null, null];
+    if (!c) { aviso(ERRORES.ubicacion_no_valida, "error"); return; }
+    $("guardarUbic").disabled = true; $("uEstado").textContent = "Guardando y actualizando las tarjetas…";
+    try {
+      await rpc("admin_guardar_ubicacion", { p_negocio: actual.id, p_latitud: c[0], p_longitud: c[1], p_radio: Number($("uRadio").value) });
+      let n = 0;
+      if (await asegurarSesion()) {
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/aplicar-diseno`, { method: "POST", headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}`, "content-type": "application/json" }, body: JSON.stringify({ negocio_id: actual.id }) });
+        const d = await r.json().catch(() => ({})); n = d.tarjetas || 0;
+      }
+      aviso(c[0] == null ? "Ubicación quitada." : `Ubicación guardada. ${n} ${n === 1 ? "tarjeta actualizada" : "tarjetas actualizadas"}.`, "ok");
+      const id = actual.id; await cargarNegocios(); abrir(id);
+    } catch (e) { aviso(textoError(e), "error"); pintarUbic(); }
+    finally { $("guardarUbic").disabled = false; }
   });
 
   $("formInvitar").addEventListener("submit", async (ev) => {
