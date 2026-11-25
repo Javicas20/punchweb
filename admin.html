@@ -255,11 +255,11 @@
         <form id="formInvitar" class="rejilla" novalidate>
           <label class="campo" for="iEmail">Email del dueño o empleado<input id="iEmail" type="email" inputmode="email" placeholder="dueno@negocio.com"></label>
           <label class="campo" for="iRol">Rol<select id="iRol"><option value="dueno">Dueño</option><option value="empleado">Empleado</option></select></label>
-          <button class="btn principal ancho" type="submit" style="grid-column:1/-1">Generar invitación</button>
+          <button class="btn principal ancho" type="submit" id="enviarInv" style="grid-column:1/-1">Enviar invitación por correo</button>
         </form>
         <p class="msg" id="msgInvitar" role="alert"></p>
         <div class="enlace" id="enlaceInv" hidden>
-          <span class="campo">Enlace de invitación · caduca en 7 días</span>
+          <span class="campo" id="estadoInv">Enlace de invitación · caduca en 7 días</span>
           <code id="urlInv"></code>
           <div class="acciones">
             <button class="btn" id="copiarInv">Copiar enlace</button>
@@ -508,7 +508,7 @@
 
   $("formInvitar").addEventListener("submit", async (ev) => {
     ev.preventDefault();
-    const m = $("msgInvitar"); m.className = "msg"; m.textContent = "Generando…";
+    const m = $("msgInvitar"); m.className = "msg"; m.textContent = "Enviando la invitación…"; $("enviarInv").disabled = true;
     try {
       const [inv] = await rpc("admin_invitar", { p_negocio: actual.id, p_email: $("iEmail").value, p_rol: $("iRol").value });
       const url = `${WEB}activar.html?i=${inv.token}`;
@@ -517,8 +517,24 @@
       const asunto = `Tu panel de Punch para ${actual.nombre}`;
       const cuerpo = `Hola:\n\nYa tienes listo el panel de Punch para ${actual.nombre}, donde podrás sellar las visitas de tus clientes desde el móvil.\n\nPara activarlo, abre este enlace y crea tu contraseña (caduca en 7 días):\n${url}\n\nUn saludo`;
       $("correoInv").href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
-      aviso("Invitación creada. Cópiala o ábrela en tu correo.", "ok"); cargarNegocios();
+      // Envío automático del correo (Supabase Auth con el servidor de correo propio)
+      let envio = {};
+      try {
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/invitar`, { method: "POST", headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}`, "content-type": "application/json" }, body: JSON.stringify({ token: inv.token }) });
+        envio = await r.json().catch(() => ({}));
+      } catch { envio = { error: "sin_conexion" }; }
+      if (envio.enviado) {
+        $("estadoInv").textContent = envio.cuenta === "existente"
+          ? `✓ Correo enviado a ${email}. Ya tenía cuenta en Punch: al aceptar se le añadirá este negocio. Enlace de respaldo:`
+          : `✓ Correo enviado a ${email}. Si no le llega, envíale este enlace (caduca en 7 días):`;
+        aviso(`Invitación enviada por correo a ${email}.`, "ok");
+      } else {
+        $("estadoInv").textContent = (envio.error === "limite_correo" ? "Se ha alcanzado el límite de correos por hora." : "No se pudo enviar el correo.") + " Envíale este enlace a mano (caduca en 7 días):";
+        aviso("La invitación está creada, pero el correo no salió. Usa «Copiar enlace» o «Abrir en el correo».", "error");
+      }
+      $("iEmail").value = ""; cargarNegocios();
     } catch (e) { m.className = "msg error"; m.textContent = textoError(e); }
+    finally { $("enviarInv").disabled = false; }
   });
   async function copiar(texto) {
     try { await navigator.clipboard.writeText(texto); aviso("Copiado.", "ok"); }
