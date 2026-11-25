@@ -127,8 +127,8 @@
     <div class="aviso vidrio" id="avisoNavegador" hidden></div>
 
     <form class="formulario vidrio" id="form" novalidate>
-      <label class="campo" for="nombre">Tu nombre
-        <input id="nombre" type="text" autocomplete="given-name" maxlength="40" placeholder="Por ejemplo, Lucía" required>
+      <label class="campo" for="nombre">Nombre y apellidos
+        <input id="nombre" type="text" autocomplete="name" autocapitalize="words" maxlength="60" placeholder="Por ejemplo, Lucía Martín García" required>
       </label>
       <label class="campo" for="telefono">Teléfono <small>Opcional: si cambias de móvil, te la pasamos en el local</small>
         <input id="telefono" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" placeholder="612 345 678">
@@ -219,7 +219,7 @@
     $("kPremio").textContent = bono ? "Bono" : "Premio";
     $("programa").textContent = n.programa;
     $("premio").textContent = bono ? `${n.visitas_para_premio} ${n.unidad_plural}` : n.premio;
-    $("textoPrivacidad").textContent = `Acepto que ${n.nombre} guarde mi nombre y, si lo indico, mi teléfono solo para gestionar mi ${n.tipo === "bono" ? "bono" : "tarjeta de sellos"}. No se usan para publicidad y puedo pedir que se borren en el local. `;
+    $("textoPrivacidad").textContent = `Acepto que ${n.nombre} guarde mi nombre y apellidos y, si lo indico, mi teléfono solo para gestionar mi ${n.tipo === "bono" ? "bono" : "tarjeta de sellos"}. No se usan para publicidad y puedo pedir que se borren en el local. `;
     const enlace = document.createElement("a"); enlace.href = "privacidad.html"; enlace.target = "_blank"; enlace.rel = "noopener"; enlace.textContent = "Política de privacidad"; enlace.style.color = "inherit";
     $("textoPrivacidad").appendChild(enlace);
 
@@ -251,7 +251,8 @@
     const nombre = $("nombre").value.trim().replace(/\s+/g, " ");
     const telefono = $("telefono").value.replace(/[\s().-]/g, "");
     const err = $("error");
-    if (!nombre) { err.textContent = "Escribe tu nombre."; $("nombre").focus(); return; }
+    if (!nombre) { err.textContent = "Escribe tu nombre y apellidos."; $("nombre").focus(); return; }
+    if (nombre.split(" ").filter((p) => p.length > 0).length < 2) { err.textContent = "Escribe también al menos un apellido."; $("nombre").focus(); return; }
     if (telefono && !/^\+?[0-9]{6,15}$/.test(telefono)) { err.textContent = "El teléfono no parece correcto. Escribe solo números, por ejemplo 612345678."; $("telefono").focus(); return; }
     if (!$("acepto").checked) { err.textContent = "Para crear la tarjeta, marca la casilla de privacidad."; return; }
     err.textContent = "";
