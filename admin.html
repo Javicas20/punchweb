@@ -149,6 +149,17 @@
   .barra-uso i{display:block;height:100%;background:var(--acento);border-radius:inherit}
   .barra-uso.lleno i{background:var(--error)}
   .pill.plan{background:#e3eee8;color:#2c4a3e}
+  /* Pago */
+  .pago-cab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .pago .fila input{min-width:0}
+  #pImporte{flex:0 0 110px}
+  .pago-pie{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .pago-pie details{flex:1;min-width:200px}
+  .pago-pie summary{cursor:pointer;color:var(--suave);font-size:14px;padding:9px 0}
+  .pagos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+  .pagos li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid var(--linea)}
+  .pill.activa{background:#dcefe4;color:#1f6141} .pill.gracia,.pill.vence{background:#fbefd5;color:#7a5413} .pill.impagada{background:#f6dcd8;color:#8a2a20} .pill.pausada{background:#ece9e6;color:#6b6560} .pill.gratis{background:#e3eee8;color:#2c4a3e}
+  @media (max-width:600px){.pago .fila{flex-wrap:wrap}.pago .fila input,#pImporte{flex:1 1 100%}}
   /* Detalle */
   .pestanas{display:flex;gap:6px;flex-wrap:wrap}
   .pestanas button{border:1px solid var(--linea);background:var(--campo);border-radius:999px;padding:8px 14px;font-weight:500;font-size:14px}
@@ -292,6 +303,16 @@
         </form>
         <p class="sub" id="uEstado" style="margin:0"></p>
       </div>
+      <div class="plan-fila pago" id="bloquePago">
+        <div class="pago-cab"><b>Pago</b><span class="pill" id="pEstado"></span><span class="sub" id="pResumen" style="margin:0"></span></div>
+        <form class="fila" id="formPago" novalidate>
+          <select id="pMeses" aria-label="Meses pagados"><option value="1">1 mes</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option></select>
+          <input id="pImporte" inputmode="decimal" aria-label="Importe en euros" placeholder="Importe €">
+          <input id="pRef" maxlength="120" placeholder="Referencia (opcional)" autocomplete="off">
+          <button class="btn principal" type="submit" id="guardarPago">Registrar transferencia</button>
+        </form>
+        <div class="pago-pie"><button class="btn" type="button" id="pausarPago"></button><details id="pHistorial"><summary>Historial de pagos</summary><ul class="pagos" id="pLista"></ul></details></div>
+      </div>
       <div class="pestanas" role="tablist">
         <button role="tab" id="tabInvitar" aria-selected="true">Invitar</button>
         <button role="tab" id="tabQR" aria-selected="false">QR de alta</button>
@@ -370,6 +391,7 @@
     radio_no_valido: "Elige un radio válido.",
     limite_equipo: "El equipo ya tiene todas las personas que permite su plan (contando invitaciones pendientes). Sube el plan o anula una invitación.",
     plan_no_valido: "Elige un plan válido.",
+    meses_no_validos: "Elige cuántos meses se pagan.", importe_no_valido: "El importe no es válido.",
   };
   let avisoT;
   function aviso(t, tipo = "") { const e = $("estado"); e.textContent = t; e.className = `toast vidrio ver ${tipo}`; clearTimeout(avisoT); avisoT = setTimeout(() => e.classList.remove("ver"), tipo === "error" ? 7000 : 4000); }
@@ -398,6 +420,19 @@
   }
   const textoError = (e) => ERRORES[e.message] || "No se pudo completar: " + e.message;
   const NOMBRE_PLAN = { gratis: "Gratis", semilla: "Semilla", brote: "Brote", raiz: "Raíz" };
+  const PRECIO_PLAN = { gratis: 0, semilla: 29, brote: 70, raiz: 99 };
+  const fechaES = (d) => d ? new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "";
+  // Estado del pago para mostrar (la regla real está en la base de datos: estado_suscripcion)
+  function estadoPagoTexto(n) {
+    const e = n.estado_pago, hoy = new Date(); hoy.setHours(12, 0, 0, 0);
+    const dias = n.pagado_hasta ? Math.round((new Date(n.pagado_hasta + "T12:00:00") - hoy) / 864e5) : null;
+    if (e === "gratis") return { clase: "gratis", corto: "Gratis", largo: "Plan Gratis: no necesita pago.", aviso: false };
+    if (e === "pausada") return { clase: "pausada", corto: "Pausado", largo: "Pausado a mano: no admite tarjetas nuevas.", aviso: true };
+    if (e === "impagada") return { clase: "impagada", corto: "Impagado", largo: n.pagado_hasta ? `Venció el ${fechaES(n.pagado_hasta)}: no admite tarjetas nuevas.` : "Sin pagos registrados: no admite tarjetas nuevas.", aviso: true };
+    if (e === "gracia") return { clase: "gracia", corto: "En gracia", largo: `Venció el ${fechaES(n.pagado_hasta)}. Le quedan ${Math.max(0, 7 + dias)} días de gracia antes de bloquear altas nuevas.`, aviso: true };
+    if (dias !== null && dias <= 10) return { clase: "vence", corto: `Vence en ${dias} d`, largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: true };
+    return { clase: "activa", corto: "Al día", largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: false };
+  }
   const fmt = (x) => Number(x).toLocaleString("es-ES");
   const limiteTexto = (usado, limite) => limite == null ? `${fmt(usado)} · sin límite` : `${fmt(usado)} de ${fmt(limite)}`;
 
@@ -487,6 +522,9 @@
 
   async function cargarNegocios() {
     try { negocios = await rpc("admin_negocios"); } catch (e) { aviso(textoError(e), "error"); return; }
+    // Primero los que necesitan atención: impagados, pausados, en gracia y los que vencen pronto
+    const prioridad = (n) => ({ impagada: 0, pausada: 1, gracia: 2 }[n.estado_pago] ?? (estadoPagoTexto(n).clase === "vence" ? 3 : 4));
+    negocios.sort((x, y) => prioridad(x) - prioridad(y));
     const c = $("negocios"); c.textContent = "";
     if (!negocios.length) { const p = document.createElement("p"); p.className = "vacio"; p.textContent = "Todavía no hay negocios. Crea el primero con «Nuevo negocio»."; c.appendChild(p); }
     for (const n of negocios) {
@@ -496,6 +534,7 @@
       const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = n.nombre;
       const d = document.createElement("div"); d.className = "datos";
       const pl = document.createElement("span"); pl.className = "pill plan"; pl.textContent = NOMBRE_PLAN[n.plan] || n.plan;
+      const ep = estadoPagoTexto(n); if (ep.aviso) { const a = document.createElement("span"); a.className = "pill " + ep.clase; a.textContent = ep.corto; d.append(a); }
       d.append(pl, `${limiteTexto(n.tarjetas, n.limite_tarjetas)} tarjetas · ${limiteTexto(n.personal, n.limite_equipo)} en el equipo` + (n.invitaciones_pendientes > 0 ? ` · ${n.invitaciones_pendientes} invitación pendiente` : ""));
       info.append(nom, d);
       const b = document.createElement("button"); b.className = "btn"; b.textContent = "Gestionar"; b.onclick = () => abrir(n.id);
@@ -628,7 +667,7 @@
   }
 
   function pintarUso() {
-    pintarUbic();
+    pintarUbic(); pintarPago();
     $("dPlan").value = actual.plan;
     const c = $("usoPlan"); c.textContent = "";
     for (const [titulo, usado, limite] of [["Tarjetas activas", actual.tarjetas, actual.limite_tarjetas], ["Equipo", actual.personal, actual.limite_equipo]]) {
@@ -689,6 +728,51 @@
       const id = actual.id; await cargarNegocios(); abrir(id);
     } catch (e) { aviso(textoError(e), "error"); pintarUbic(); }
     finally { $("guardarUbic").disabled = false; }
+  });
+
+  // ── Pago (transferencias) ──
+  function importeSugerido() { return (PRECIO_PLAN[actual.plan] || 0) * Number($("pMeses").value); }
+  async function pintarPago() {
+    const ep = estadoPagoTexto(actual);
+    $("pEstado").className = "pill " + ep.clase; $("pEstado").textContent = ep.corto; $("pResumen").textContent = ep.largo;
+    const gratis = actual.plan === "gratis";
+    $("formPago").hidden = gratis; $("pImporte").value = gratis ? "" : String(importeSugerido()); $("pRef").value = "";
+    $("pausarPago").textContent = actual.suscripcion_pausada ? "Reactivar" : "Pausar";
+    const ul = $("pLista"); ul.textContent = "";
+    try {
+      const pagos = await rpc("admin_pagos", { p_negocio: actual.id });
+      if (!pagos.length) { const li = document.createElement("li"); li.textContent = "Todavía no hay pagos registrados."; ul.appendChild(li); }
+      for (const pg of pagos) {
+        const li = document.createElement("li");
+        const a = document.createElement("span"); a.textContent = `${fechaES(pg.fecha)} · ${Number(pg.importe).toLocaleString("es-ES", { style: "currency", currency: "EUR" })} · ${pg.meses} ${pg.meses === 1 ? "mes" : "meses"}${pg.referencia ? " · " + pg.referencia : ""}`;
+        const b = document.createElement("span"); b.className = "sub"; b.style.margin = "0"; b.textContent = `hasta ${fechaES(pg.hasta)}`;
+        li.append(a, b); ul.appendChild(li);
+      }
+    } catch (e) { const li = document.createElement("li"); li.textContent = textoError(e); ul.appendChild(li); }
+  }
+  $("pMeses").addEventListener("change", () => { $("pImporte").value = String(importeSugerido()); });
+  $("formPago").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const importe = Number(String($("pImporte").value).replace(",", "."));
+    if (!Number.isFinite(importe) || importe < 0) { aviso(ERRORES.importe_no_valido, "error"); return; }
+    const meses = Number($("pMeses").value);
+    if (!confirm(`¿Registrar una transferencia de ${importe.toLocaleString("es-ES", { style: "currency", currency: "EUR" })} por ${meses} ${meses === 1 ? "mes" : "meses"} para ${actual.nombre}?`)) return;
+    $("guardarPago").disabled = true;
+    try {
+      const [r] = await rpc("admin_registrar_pago", { p_negocio: actual.id, p_importe: importe, p_meses: meses, p_referencia: $("pRef").value });
+      aviso(`Pago registrado. ${actual.nombre} queda pagado hasta el ${fechaES(r.pagado_hasta)}.`, "ok");
+      const id = actual.id; await cargarNegocios(); abrir(id);
+    } catch (e) { aviso(textoError(e), "error"); }
+    finally { $("guardarPago").disabled = false; }
+  });
+  $("pausarPago").addEventListener("click", async () => {
+    const pausar = !actual.suscripcion_pausada;
+    if (pausar && !confirm(`¿Pausar ${actual.nombre}? No podrá dar de alta tarjetas nuevas (las de sus clientes siguen funcionando).`)) return;
+    try {
+      await rpc("admin_pausar_suscripcion", { p_negocio: actual.id, p_pausada: pausar });
+      aviso(pausar ? "Suscripción pausada." : "Suscripción reactivada.", "ok");
+      const id = actual.id; await cargarNegocios(); abrir(id);
+    } catch (e) { aviso(textoError(e), "error"); }
   });
 
   $("formInvitar").addEventListener("submit", async (ev) => {

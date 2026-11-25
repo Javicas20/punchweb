@@ -386,7 +386,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "21";
+  const VERSION = "22";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `OnceMore · v${VERSION}`;
@@ -601,6 +601,18 @@
     const barra = document.createElement("span"); barra.className = "barra-uso";
     const i = document.createElement("i"); i.style.width = `${Math.min(100, Math.max(3, pct * 100))}%`; barra.appendChild(i);
     c.append(l, barra);
+    // Estado del pago (solo planes de pago)
+    if (u.estado_pago === "gracia" || u.estado_pago === "impagada" || u.estado_pago === "pausada") {
+      const n = document.createElement("span"); n.className = "nota";
+      const f = u.pagado_hasta ? new Date(u.pagado_hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long" }) : "";
+      n.textContent = u.estado_pago === "gracia" ? `Tu suscripción venció el ${f}. Tienes unos días para renovarla por transferencia; escríbenos a javier@marwanai.com.`
+        : u.estado_pago === "pausada" ? "Tu suscripción está en pausa: tus clientes no pueden crear tarjetas nuevas. Las que ya tienen siguen funcionando. Escríbenos a javier@marwanai.com."
+        : "Suscripción pendiente de pago: tus clientes no pueden crear tarjetas nuevas. Las que ya tienen siguen funcionando. Escríbenos a javier@marwanai.com para renovarla.";
+      c.classList.add("lleno"); c.appendChild(n);
+    } else if (u.pagado_hasta && u.estado_pago === "activa") {
+      const dias = Math.round((new Date(u.pagado_hasta + "T12:00:00") - Date.now()) / 864e5);
+      if (dias <= 10) { const n = document.createElement("span"); n.className = "nota"; n.style.color = "var(--aviso)"; n.textContent = `Tu suscripción vence en ${dias} ${dias === 1 ? "día" : "días"}. Renuévala por transferencia para no perder las altas.`; c.appendChild(n); }
+    }
     if (pct >= 0.85) {
       const n = document.createElement("span"); n.className = "nota";
       n.textContent = pct >= 1 ? "Has llegado al máximo: tus clientes no pueden crear tarjetas nuevas. Escríbenos para ampliar el plan." : "Te quedan pocas tarjetas en tu plan. Escríbenos si quieres ampliarlo.";

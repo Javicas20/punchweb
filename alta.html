@@ -223,6 +223,12 @@
     const enlace = document.createElement("a"); enlace.href = "privacidad.html"; enlace.target = "_blank"; enlace.rel = "noopener"; enlace.textContent = "Política de privacidad"; enlace.style.color = "inherit";
     $("textoPrivacidad").appendChild(enlace);
 
+    if (n.cerrado) {
+      $("form").hidden = true;
+      const aviso = $("enlaceMalo"); aviso.hidden = false;
+      aviso.textContent = `${n.nombre} no está dando de alta tarjetas nuevas en este momento. Pregunta en el mostrador.`;
+      return;
+    }
     if (n.completo) {
       $("form").hidden = true;
       const aviso = $("enlaceMalo"); aviso.hidden = false;
