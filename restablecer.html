@@ -185,6 +185,11 @@
   const API = `${SUPABASE_URL}/functions/v1/restablecer`;
   const $ = (id) => document.getElementById(id);
   const token = new URLSearchParams(location.search).get("r") || "";
+  // Enlace del correo de recuperación: Supabase vuelve aquí con la sesión en el fragmento (#access_token=…)
+  const fragmento = new URLSearchParams(location.hash.slice(1));
+  const sesionCorreo = fragmento.get("type") === "recovery" ? fragmento.get("access_token") : null;
+  const errorCorreo = fragmento.get("error_code") || fragmento.get("error");
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
   // El token no debe quedarse en el historial ni en la barra
   if (token) history.replaceState(null, "", location.pathname);
   let datos = null;
@@ -199,7 +204,7 @@
   const ERRORES = {
     no_valido: ["Enlace no válido", "Este enlace no existe. Revisa que lo hayas copiado entero o pide uno nuevo a Punch."],
     usado: ["Enlace ya usado", "Este enlace ya se ha utilizado. Si ya cambiaste la contraseña, entra en tu panel con la nueva."],
-    caducado: ["Enlace caducado", "Los enlaces para cambiar la contraseña duran 24 horas. Pide uno nuevo desde «¿Has olvidado tu contraseña?»."],
+    caducado: ["Enlace caducado", "Este enlace ya no es válido: caduca al cabo de un tiempo y solo sirve una vez. Pide uno nuevo desde «¿Has olvidado tu contraseña?»."],
   };
 
   // ── Reglas (las mismas que comprueba el servidor) ──
@@ -274,11 +279,13 @@
     m.textContent = "Guardando la contraseña…";
     let d, r;
     try {
-      r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", apikey: SUPABASE_KEY }, body: JSON.stringify({ token, password: pw }) });
+      r = await fetch(API, { method: "POST", headers: { "content-type": "application/json", apikey: SUPABASE_KEY },
+        body: JSON.stringify(sesionCorreo ? { access_token: sesionCorreo, password: pw } : { token, password: pw }) });
       d = await r.json().catch(() => ({}));
     } catch { m.className = "msg error"; m.textContent = "Sin conexión. Revisa internet e inténtalo de nuevo."; b.disabled = false; return; }
 
     if (!r.ok) {
+      if (d.error === "sesion_no_valida") return estado(...ERRORES.caducado, false);
       if (ERRORES[d.error]) return estado(...ERRORES[d.error], false);
       m.className = "msg error";
       m.textContent = d.error === "contrasena_filtrada" ? "Esa contraseña aparece en filtraciones de datos de internet. Elige otra distinta."
@@ -304,6 +311,18 @@
   });
 
   (async () => {
+    if (errorCorreo) return estado(...ERRORES.caducado, false);
+    if (sesionCorreo) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesionCorreo}` } });
+        const u = await r.json().catch(() => ({}));
+        if (!r.ok || !u.email) return estado(...ERRORES.caducado, false);
+        datos = { email: u.email, negocio: "" };
+        $("email").textContent = u.email; $("usuario").value = u.email;
+        $("cargando").hidden = true; $("form").hidden = false; $("pass").focus();
+      } catch { estado("Sin conexión", "No hemos podido comprobar el enlace. Revisa internet y vuelve a abrirlo desde el correo.", false, "Ir al panel"); }
+      return;
+    }
     if (!/^[0-9a-f]{32,64}$/.test(token)) return estado(...ERRORES.no_valido, false);
     try {
       const r = await fetch(`${API}?token=${token}`, { headers: { apikey: SUPABASE_KEY } });

@@ -587,9 +587,12 @@
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { m.className = "msg error"; m.textContent = "Escribe un email válido."; return; }
     $("pedirEnlace").disabled = true; m.textContent = "Enviando…";
     try {
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/restablecer`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ solicitar: email }) });
+      // Supabase envía el correo con el enlace (servidor de correo propio); vuelve a restablecer.html
+      const vuelta = new URL("restablecer.html", location.href).href.startsWith("http") ? new URL("restablecer.html", location.href).href : "https://javicas20.github.io/punchweb/restablecer.html";
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(vuelta)}`, { method: "POST", headers: { apikey: SUPABASE_KEY, "content-type": "application/json" }, body: JSON.stringify({ email }) });
+      if (r.status === 429) { m.className = "msg error"; m.textContent = "Has pedido varios enlaces seguidos. Espera un minuto y vuelve a intentarlo."; return; }
       if (!r.ok) throw new Error();
-      m.textContent = "Petición recibida. Si el email está registrado, te enviaremos un enlace para crear una contraseña nueva. Revisa tu correo, también la carpeta de spam.";
+      m.textContent = "Listo. Si el email está registrado, te llegará un correo con un enlace para crear una contraseña nueva. Revisa también la carpeta de spam.";
     } catch { m.className = "msg error"; m.textContent = "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo."; }
     finally { $("pedirEnlace").disabled = false; }
   };
