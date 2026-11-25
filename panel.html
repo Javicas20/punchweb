@@ -54,6 +54,8 @@
   .btn svg{width:20px;height:20px;flex:none}
   .btn.principal{background:var(--acento);border-color:var(--acento);color:#fff;box-shadow:0 10px 24px rgba(63,99,85,.28),inset 0 1px 0 rgba(255,255,255,.25)}
   .btn.principal:hover{background:var(--acento-osc)}
+  .btn.peligro{color:var(--error);border-color:rgba(181,71,58,.35)}
+  .btn.peligro:hover{background:#fbeeec}
   .btn:disabled{opacity:.5;cursor:default;transform:none}
   .btn.ancho{width:100%;padding:15px;font-size:16px}
   .btn.icono{padding:9px;border-radius:12px}
@@ -381,7 +383,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "18";
+  const VERSION = "19";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `OnceMore · v${VERSION}`;
@@ -389,6 +391,8 @@
 
   const MENSAJES = {
     tarjeta_no_encontrada: "No existe esa tarjeta en tu negocio.",
+    tarjeta_de_baja: "Este cliente está dado de baja: su tarjeta ya no se puede usar.",
+    no_autorizado: "Solo el dueño del negocio puede hacer esto.",
     premio_pendiente: "Esta tarjeta ya tiene el premio: canjéalo primero.",
     demasiado_pronto: "Se acaba de sellar. Espera 30 segundos antes de volver a sellar.",
     premio_no_disponible: "Aún no tiene todos los sellos.",
@@ -478,7 +482,7 @@
       const negocios = await leer("negocios?select=nombre");
       nombresNegocio = negocios.map((n) => n.nombre).join(" · ");
       $("negocio").textContent = nombresNegocio || "Sin negocio asignado";
-      const tarjetas = await leer(`tarjetas?select=serie,nombre_cliente,telefono,sellos,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)${filtroBusqueda()}&order=actualizada_en.desc&limit=50`);
+      const tarjetas = await leer(`tarjetas?select=serie,nombre_cliente,telefono,sellos,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)${filtroBusqueda()}&baja_en=is.null&order=actualizada_en.desc&limit=50`);
       const ul = $("lista"); ul.textContent = "";
       if (!tarjetas.length) {
         const li = document.createElement("li"); li.className = "vacio";
@@ -758,9 +762,10 @@
     const boton = (txt, fn, principal) => { const b = document.createElement("button"); b.className = principal ? "btn principal" : "btn"; b.textContent = txt; b.onclick = fn; bt.appendChild(b); };
     const otra = () => boton("Escanear otra", abrirEscaner);
     try {
-      const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
+      const r = await leer(`tarjetas?select=serie,nombre_cliente,sellos,baja_en,negocio_id,negocio:negocios(nombre,tipo,premio,unidad_singular,unidad_plural,visitas_para_premio,color_etiquetas,color_fondo)&serie=eq.${encodeURIComponent(serie)}`);
       if (!r.length) { nom.textContent = "Tarjeta no encontrada"; det.textContent = "No es de tu negocio o se ha borrado."; otra(); return; }
       const t = r[0], total = t.negocio.visitas_para_premio;
+      if (t.baja_en) { nom.textContent = "Cliente dado de baja"; det.textContent = `Esta tarjeta de ${t.negocio.nombre} se anuló el ${new Date(t.baja_en).toLocaleDateString("es-ES")} y ya no se puede usar.`; otra(); return; }
       colores[t.serie] = t.negocio;
       nom.textContent = t.nombre_cliente;
       const bono = t.negocio.tipo === "bono", quedan = Math.max(0, total - t.sellos);
@@ -777,9 +782,28 @@
       if (t.sellos > 0) boton("Deshacer último", hacer("anulacion"));
       boton("Pasar a otro móvil", () => pasarAOtroMovil(t.serie, t.nombre_cliente));
       otra();
+      if (misNegocios.some((n) => n.id === t.negocio_id)) {
+        const b = document.createElement("button"); b.className = "btn peligro"; b.textContent = "Dar de baja";
+        b.onclick = () => darDeBaja(t.serie, t.nombre_cliente); bt.appendChild(b);
+      }
     } catch (e) {
       nom.textContent = "No se pudo leer la tarjeta"; det.textContent = MENSAJES[e.message] || e.message; otra();
     }
+  }
+
+  // ── Dar de baja a un cliente (solo dueños) ──
+  async function darDeBaja(serie, nombre) {
+    const ok = confirm(`¿Dar de baja a ${nombre}?\n\nSe borrarán su nombre y su teléfono, su tarjeta quedará anulada en el móvil y dejará de contar en tu plan. No se puede deshacer.`);
+    if (!ok) return;
+    if (!(await asegurarSesion())) { pintar(); return; }
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/baja`, { method: "POST", headers: { ...cabeceras(), "content-type": "application/json" }, body: JSON.stringify({ serie }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { aviso(MENSAJES[d.error] || "No se pudo dar de baja: " + (d.error || r.status), "error"); return; }
+      $("ficha").hidden = true;
+      aviso(`${nombre} se ha dado de baja. Su tarjeta queda anulada.`, "ok");
+      pintar(); if (misNegocios.length) rellenarAjustes();
+    } catch (e) { aviso("Sin conexión: " + e.message, "error"); }
   }
 
   async function accionar(serie, accion) {
