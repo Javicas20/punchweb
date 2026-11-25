@@ -76,6 +76,15 @@
   .login .marca{justify-content:center}
   .login .marca svg{width:80px;height:80px;padding:15px;border-radius:24px;background:#fff;box-shadow:0 14px 30px rgba(30,52,42,.14)}
   .login h1{margin:0;text-align:center;font:400 15px/1.5 var(--cuerpo);color:var(--suave)}
+  .mfa{margin:auto;width:100%;max-width:440px;padding:30px 24px 24px;display:grid;gap:16px;text-align:center}
+  .mfa h1{margin:0;font:400 28px/1.15 var(--display)}
+  .mfa p{margin:0;color:var(--suave);font-size:14px}
+  .mfa ol{margin:0;padding-left:20px;text-align:left;color:var(--suave);font-size:14px;display:grid;gap:6px}
+  .mfa .qr{justify-self:center;background:#fff;padding:12px;border-radius:18px;box-shadow:0 10px 26px rgba(30,52,42,.12)}
+  .mfa .qr img{display:block;width:190px;height:190px}
+  .mfa .secreto{font:13px ui-monospace,Menlo,monospace;word-break:break-all;background:rgba(255,255,255,.7);border:1px solid var(--linea);border-radius:12px;padding:10px}
+  .mfa input.codigo{width:100%;text-align:center;font:600 28px/1 ui-monospace,Menlo,monospace;letter-spacing:.35em;padding:14px;border-radius:14px;border:1px solid var(--linea);background:var(--campo);color:var(--texto)}
+  .mfa input.codigo:focus{outline:none;border-color:var(--acento);background:#fff;box-shadow:0 0 0 4px rgba(85,123,107,.16)}
   .login h1 b{display:block;font:400 28px/1.15 var(--display);color:var(--texto);margin-bottom:4px}
 
   .barra{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 16px;border-radius:22px}
@@ -166,6 +175,26 @@
 
 <div class="contenedor">
   <!-- Acceso -->
+  <section class="mfa vidrio" id="mfa" hidden aria-labelledby="tituloMfa">
+    <div class="marca" role="img" aria-label="Punch" style="justify-content:center"><svg aria-hidden="true" style="width:56px;height:56px;padding:11px;border-radius:18px;background:#fff;box-shadow:0 10px 24px rgba(30,52,42,.12)"><use href="#logoPunch"/></svg></div>
+    <h1 id="tituloMfa">Verificación en dos pasos</h1>
+    <div id="mfaAlta" hidden style="display:grid;gap:14px">
+      <p>Para administrar Punch necesitas un código de tu móvil, además de la contraseña. Configúralo una sola vez:</p>
+      <ol>
+        <li>Instala una app de códigos, por ejemplo Microsoft Authenticator (o Google Authenticator, 1Password…).</li>
+        <li>En la app, añade una cuenta escaneando este QR.</li>
+        <li>Escribe aquí el código de 6 cifras que aparece.</li>
+      </ol>
+      <div class="qr"><img id="mfaQR" alt="QR para la app de códigos"></div>
+      <details><summary class="sub" style="cursor:pointer">¿No puedes escanearlo? Escribe esta clave en la app</summary><div class="secreto" id="mfaSecreto" style="margin-top:8px"></div></details>
+    </div>
+    <p id="mfaPide" hidden>Abre tu app de códigos y escribe el código de 6 cifras de Punch.</p>
+    <label class="campo" for="mfaCodigo" style="text-align:left">Código<input class="codigo" id="mfaCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*"></label>
+    <button class="btn principal ancho" id="mfaVerificar">Verificar</button>
+    <p class="msg" id="mfaMsg" role="status"></p>
+    <button type="button" class="enlace-texto" id="mfaSalir">Salir</button>
+  </section>
+
   <section class="login vidrio" id="login" aria-labelledby="tituloLogin">
     <div class="marca" role="img" aria-label="Punch"><svg aria-hidden="true"><use href="#logoPunch"/></svg></div>
     <h1 id="tituloLogin"><b>Administración</b>Da de alta negocios e invita a sus dueños</h1>
@@ -351,9 +380,61 @@
 
   // ── Pantallas ──
   let negocios = [], actual = null;
+  // ── Verificación en dos pasos (TOTP de Supabase Auth) ──
+  const cargaJWT = (t) => { try { return JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); } catch { return {}; } };
+  const nivelSesion = () => (sesion ? cargaJWT(sesion.access_token).aal : null);
+  let factorMFA = null;
+  async function auth(ruta, metodo = "GET", cuerpo) {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/${ruta}`, { method: metodo, headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${sesion.access_token}`, "content-type": "application/json" }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error_code || d.msg || d.message || `HTTP ${r.status}`);
+    return d;
+  }
+  async function mostrarMFA() {
+    $("login").hidden = true; $("app").hidden = true; $("mfa").hidden = false;
+    $("mfaMsg").className = "msg"; $("mfaMsg").textContent = ""; $("mfaCodigo").value = "";
+    try {
+      const u = await auth("user");
+      const totp = (u.factors || []).filter((f) => f.factor_type === "totp");
+      const verificado = totp.find((f) => f.status === "verified");
+      if (verificado) { factorMFA = verificado.id; $("mfaAlta").hidden = true; $("mfaPide").hidden = false; $("mfaVerificar").textContent = "Verificar"; }
+      else {
+        // Primera vez: se borran intentos anteriores sin terminar y se da de alta uno nuevo
+        for (const f of totp) await auth(`factors/${f.id}`, "DELETE").catch(() => {});
+        const f = await auth("factors", "POST", { factor_type: "totp", friendly_name: `Punch ${new Date().toISOString().slice(0, 16)}`, issuer: "Punch" });
+        factorMFA = f.id;
+        // Supabase entrega el QR como SVG: se convierte en imagen
+        $("mfaQR").src = f.totp.qr_code.startsWith("data:") ? f.totp.qr_code : "data:image/svg+xml;charset=utf-8," + encodeURIComponent(f.totp.qr_code); $("mfaSecreto").textContent = f.totp.secret;
+        $("mfaAlta").hidden = false; $("mfaPide").hidden = true; $("mfaVerificar").textContent = "Activar y entrar";
+      }
+      $("mfaCodigo").focus();
+    } catch (e) { $("mfaMsg").className = "msg error"; $("mfaMsg").textContent = "No se pudo preparar la verificación: " + e.message; }
+  }
+  async function verificarMFA() {
+    const codigo = $("mfaCodigo").value.replace(/\D/g, ""), m = $("mfaMsg");
+    if (codigo.length !== 6) { m.className = "msg error"; m.textContent = "Escribe las 6 cifras del código."; return; }
+    $("mfaVerificar").disabled = true; m.className = "msg"; m.textContent = "Comprobando…";
+    try {
+      const reto = await auth(`factors/${factorMFA}/challenge`, "POST", {});
+      const d = await auth(`factors/${factorMFA}/verify`, "POST", { challenge_id: reto.id, code: codigo });
+      guardar({ access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Math.floor(Date.now() / 1000) + d.expires_in });
+      m.textContent = ""; $("mfa").hidden = true; await pintar();
+    } catch (e) {
+      m.className = "msg error";
+      m.textContent = /ip_address/i.test(e.message) ? "Ha cambiado tu conexión mientras verificabas. Escribe el código de nuevo."
+        : /invalid|code|mfa_verification/i.test(e.message) ? "Código incorrecto o caducado. Espera al siguiente código y comprueba que la hora del móvil es automática." : "No se pudo verificar: " + e.message;
+      $("mfaCodigo").select();
+    } finally { $("mfaVerificar").disabled = false; }
+  }
+  $("mfaVerificar").onclick = verificarMFA;
+  $("mfaCodigo").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); if (e.target.value.length === 6) verificarMFA(); });
+  $("mfaSalir").onclick = () => { guardar(null); $("mfa").hidden = true; pintar(); };
+
   async function pintar() {
     await asegurarSesion();
-    if (!sesion) { $("login").hidden = false; $("app").hidden = true; return; }
+    if (!sesion) { $("login").hidden = false; $("app").hidden = true; $("mfa").hidden = true; return; }
+    if (nivelSesion() !== "aal2") { await mostrarMFA(); return; }
+    $("mfa").hidden = true;
     try {
       const esAdmin = await rpc("es_admin");
       if (!esAdmin) { $("login").hidden = false; $("app").hidden = true; $("loginMsg").className = "msg error"; $("loginMsg").textContent = ERRORES.no_autorizado; return; }
