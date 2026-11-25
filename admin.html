@@ -158,7 +158,7 @@
   .pago-pie summary{cursor:pointer;color:var(--suave);font-size:14px;padding:9px 0}
   .pagos{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
   .pagos li{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid var(--linea)}
-  .pill.activa{background:#dcefe4;color:#1f6141} .pill.gracia,.pill.vence{background:#fbefd5;color:#7a5413} .pill.impagada{background:#f6dcd8;color:#8a2a20} .pill.pausada{background:#ece9e6;color:#6b6560} .pill.gratis{background:#e3eee8;color:#2c4a3e}
+  .pill.activa{background:#dcefe4;color:#1f6141} .pill.gracia,.pill.vence{background:#fbefd5;color:#7a5413} .pill.impagada,.pill.bloqueada{background:#f6dcd8;color:#8a2a20} .pill.pausada{background:#ece9e6;color:#6b6560} .pill.gratis{background:#e3eee8;color:#2c4a3e}
   @media (max-width:600px){.pago .fila{flex-wrap:wrap}.pago .fila input,#pImporte{flex:1 1 100%}}
   /* Detalle */
   .pestanas{display:flex;gap:6px;flex-wrap:wrap}
@@ -428,7 +428,8 @@
     const dias = n.pagado_hasta ? Math.round((new Date(n.pagado_hasta + "T12:00:00") - hoy) / 864e5) : null;
     if (e === "gratis") return { clase: "gratis", corto: "Gratis", largo: "Plan Gratis: no necesita pago.", aviso: false };
     if (e === "pausada") return { clase: "pausada", corto: "Pausado", largo: "Pausado a mano: no admite tarjetas nuevas.", aviso: true };
-    if (e === "impagada") return { clase: "impagada", corto: "Impagado", largo: n.pagado_hasta ? `Venció el ${fechaES(n.pagado_hasta)}: no admite tarjetas nuevas.` : "Sin pagos registrados: no admite tarjetas nuevas.", aviso: true };
+    if (e === "bloqueada") return { clase: "bloqueada", corto: "Bloqueado", largo: `Venció el ${fechaES(n.pagado_hasta)} (más de 30 días): no puede sellar ni admitir tarjetas nuevas. Las tarjetas de sus clientes siguen intactas.`, aviso: true };
+    if (e === "impagada") return { clase: "impagada", corto: "Impagado", largo: n.pagado_hasta ? `Venció el ${fechaES(n.pagado_hasta)}: no admite tarjetas nuevas. Le quedan ${Math.max(0, 30 + dias)} días antes de bloquear el sellado.` : "Sin pagos registrados: no admite tarjetas nuevas.", aviso: true };
     if (e === "gracia") return { clase: "gracia", corto: "En gracia", largo: `Venció el ${fechaES(n.pagado_hasta)}. Le quedan ${Math.max(0, 7 + dias)} días de gracia antes de bloquear altas nuevas.`, aviso: true };
     if (dias !== null && dias <= 10) return { clase: "vence", corto: `Vence en ${dias} d`, largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: true };
     return { clase: "activa", corto: "Al día", largo: `Pagado hasta el ${fechaES(n.pagado_hasta)}.`, aviso: false };
@@ -523,7 +524,7 @@
   async function cargarNegocios() {
     try { negocios = await rpc("admin_negocios"); } catch (e) { aviso(textoError(e), "error"); return; }
     // Primero los que necesitan atención: impagados, pausados, en gracia y los que vencen pronto
-    const prioridad = (n) => ({ impagada: 0, pausada: 1, gracia: 2 }[n.estado_pago] ?? (estadoPagoTexto(n).clase === "vence" ? 3 : 4));
+    const prioridad = (n) => ({ bloqueada: 0, impagada: 1, pausada: 2, gracia: 3 }[n.estado_pago] ?? (estadoPagoTexto(n).clase === "vence" ? 4 : 5));
     negocios.sort((x, y) => prioridad(x) - prioridad(y));
     const c = $("negocios"); c.textContent = "";
     if (!negocios.length) { const p = document.createElement("p"); p.className = "vacio"; p.textContent = "Todavía no hay negocios. Crea el primero con «Nuevo negocio»."; c.appendChild(p); }

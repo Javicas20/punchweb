@@ -386,7 +386,7 @@
   // Datos públicos del proyecto (URL y clave publishable). El lector de QR (jsQR) solo se carga si el navegador no trae uno.
   const SUPABASE_URL = "https://pifswbumwcuqpvneqtbh.supabase.co";
   const SUPABASE_KEY = "sb_publishable_OQ9uJBW5zEBbXsKB0O0kmQ_gxDer4CP";
-  const VERSION = "22";
+  const VERSION = "23";
   const $ = (id) => document.getElementById(id);
   $("arranque").hidden = true;
   $("pie").textContent = `OnceMore · v${VERSION}`;
@@ -395,6 +395,7 @@
   const MENSAJES = {
     tarjeta_no_encontrada: "No existe esa tarjeta en tu negocio.",
     tarjeta_de_baja: "Este cliente está dado de baja: su tarjeta ya no se puede usar.",
+    pago_pendiente: "No se puede sellar: la suscripción tiene un pago pendiente. Escríbenos a javier@marwanai.com para renovarla.",
     no_autorizado: "Solo el dueño del negocio puede hacer esto.",
     premio_pendiente: "Esta tarjeta ya tiene el premio: canjéalo primero.",
     demasiado_pronto: "Se acaba de sellar. Espera 30 segundos antes de volver a sellar.",
@@ -602,12 +603,13 @@
     const i = document.createElement("i"); i.style.width = `${Math.min(100, Math.max(3, pct * 100))}%`; barra.appendChild(i);
     c.append(l, barra);
     // Estado del pago (solo planes de pago)
-    if (u.estado_pago === "gracia" || u.estado_pago === "impagada" || u.estado_pago === "pausada") {
+    if (["gracia", "impagada", "bloqueada", "pausada"].includes(u.estado_pago)) {
       const n = document.createElement("span"); n.className = "nota";
       const f = u.pagado_hasta ? new Date(u.pagado_hasta + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long" }) : "";
       n.textContent = u.estado_pago === "gracia" ? `Tu suscripción venció el ${f}. Tienes unos días para renovarla por transferencia; escríbenos a javier@marwanai.com.`
         : u.estado_pago === "pausada" ? "Tu suscripción está en pausa: tus clientes no pueden crear tarjetas nuevas. Las que ya tienen siguen funcionando. Escríbenos a javier@marwanai.com."
-        : "Suscripción pendiente de pago: tus clientes no pueden crear tarjetas nuevas. Las que ya tienen siguen funcionando. Escríbenos a javier@marwanai.com para renovarla.";
+        : u.estado_pago === "bloqueada" ? "Suscripción sin pagar desde hace más de 30 días: no puedes sellar ni dar de alta tarjetas. Tus clientes conservan sus tarjetas y sus sellos. Escríbenos a javier@marwanai.com para renovarla."
+        : `Suscripción pendiente de pago: tus clientes no pueden crear tarjetas nuevas. Las que ya tienen siguen funcionando.${u.pagado_hasta ? ` Si no se renueva antes del ${new Date(new Date(u.pagado_hasta + "T12:00:00").getTime() + 30 * 864e5).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}, no podrás sellar.` : ""} Escríbenos a javier@marwanai.com para renovarla.`;
       c.classList.add("lleno"); c.appendChild(n);
     } else if (u.pagado_hasta && u.estado_pago === "activa") {
       const dias = Math.round((new Date(u.pagado_hasta + "T12:00:00") - Date.now()) / 864e5);
