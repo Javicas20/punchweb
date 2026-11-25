@@ -433,7 +433,17 @@
   async function pintar() {
     await asegurarSesion();
     if (!sesion) { $("login").hidden = false; $("app").hidden = true; $("mfa").hidden = true; return; }
-    if (nivelSesion() !== "aal2") { await mostrarMFA(); return; }
+    if (nivelSesion() !== "aal2") {
+      // Solo las cuentas de administrador pasan a la verificación en dos pasos
+      let registrado = false;
+      try { registrado = await rpc("es_admin_registrado"); } catch {}
+      if (!registrado) {
+        guardar(null); $("mfa").hidden = true; $("app").hidden = true; $("login").hidden = false;
+        $("loginMsg").className = "msg error"; $("loginMsg").textContent = ERRORES.no_autorizado + " Entra con tu cuenta de administrador.";
+        return;
+      }
+      await mostrarMFA(); return;
+    }
     $("mfa").hidden = true;
     try {
       const esAdmin = await rpc("es_admin");
